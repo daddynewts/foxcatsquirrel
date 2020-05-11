@@ -8,7 +8,7 @@ function _init()
  -- sfx
  intro_jingle = 11
  eat_sfx = 14
- death_sfx = 10
+ death_sfx = 1
  jump_sfx = 0
  skull_sfx = 3
  bonus_sfx = 13

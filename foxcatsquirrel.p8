@@ -106,7 +106,7 @@ function test_mode()
 -- edit test parameters here
 -- not in the main body!
 -- sfx(-1)
- --music(-1) -- music off
+ music(-1) -- music off
  timegain=12 -- default 12
  timeleft-=0.1 -- default 0.3
 end
@@ -504,7 +504,8 @@ function draw_ui()
  -- food hitbox
  -- food # and x coordinates
  print(""..#foods,cam_x+1,1,7)
- print(""..food.x,cam_x+1,9,7)
+ print(""..food.x ..food.y,cam_x+1,9,7)
+ print(""..food.x ..food.y,cam_x+food.x-4,food.y-7,7)
  
  -- enemy coordinates on ui
  if #enemies>=1 then
@@ -597,9 +598,50 @@ end
 -->8
 -- grabbables
 
+function level_food()
+ 
+  if level==0 then
+    for i=1,1 do    
+     food={
+      sprite=flr(rnd(food_count)+food_start),
+      x=flr(rnd(90)+15),
+      y=flr(rnd(90)+10),
+    }
+    add(foods,food)
+    end
+ end
+  
+ if level==1 then
+  for i=1,1 do    
+   food={
+    sprite=flr(rnd(food_count)+food_start),
+    x=level*128+flr(rnd(90)+15),
+    y=flr(rnd(80)+15),
+   }
+  add(foods,food)
+ end
+ end
+ 
+  if level>=2 then
+  for i=1,1 do    
+   food={
+    sprite=flr(rnd(food_count)+food_start),
+    x=level*128+flr(rnd(90)+15),
+    y=flr(rnd(80)+15),
+   }
+  add(foods,food)
+  end
+ end
+ 
+ 
+--   end
+--  end
+-- end
+end
+
 function draw_food()
  for food in all(foods) do
-  spr(food.sprite,food.x+cam_x,food.y)
+  spr(food.sprite,food.x,food.y)
  end
 end
 
@@ -610,8 +652,8 @@ function collide_food()
  	
   if  food.y > player.y-8 -- -4
   and food.y < player.y+8 -- +4
-  and food.x+4+cam_x > player.x -- 4
-  and food.x+4+cam_x < player.x+8
+  and food.x+4 > player.x -- 4
+  and food.x+4 < player.x+8
    then
     add_foodpoints()
     explode(food.x,food.y,explode_size,explode_colours,explode_amount)
@@ -770,62 +812,7 @@ function level_music()
  end
 end
 
-function level_food()
- 
-  if level==0 then
-    for i=1,1 do    
-     food={
-      sprite=flr(rnd(food_count)+food_start),
-      x=flr(rnd(90)+15),
-      y=flr(rnd(90)+10),
-    }
-    add(foods,food)
-    end
- end
-  
- if level==1 then
-  for i=1,1 do    
-   food={
-    sprite=flr(rnd(food_count)+food_start),
-    x=flr(rnd(90)+15),
-    y=flr(rnd(80)+15),
-   }
-  add(foods,food)
- end
- end
- 
-  if level==2 then
-  for i=1,1 do    
-   food={
-    sprite=flr(rnd(food_count)+food_start),
-    x=flr(rnd(90)+15),
-    y=flr(rnd(80)+15),
-   }
-  add(foods,food)
-  end
- end
- 
- if level==3 then
-    for i=1,1 do    
-     food={
-      sprite=flr(rnd(food_count)+food_start),
-      x=flr(rnd(90)+15),
-      y=flr(rnd(50)+10),
-    }
-    add(foods,food)
-    end
- end
- if level==4 then
-    for i=1,1 do    
-     food={
-      sprite=flr(rnd(food_count)+food_start),
-      x=flr(rnd(90)+15),
-      y=flr(rnd(90)+10),
-    }
-    add(foods,food)
-    end
- end
-end
+
 
 function level_gimmicks()
 
@@ -1137,8 +1124,8 @@ function make_ghost()
   
   for i=1,1 do
     ghost={
-    x=level*128, --food.x-10,
-    y=player.y,
+    x=cam_x-player.x,
+    y=flr(64)-player.y,
    }
   add(enemies,ghost)
   sfx(ghost_sfx)

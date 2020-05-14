@@ -503,20 +503,20 @@ end
 function draw_ui()
  -- food hitbox
  -- food # and x coordinates
- print(""..#foods,cam_x+1,1,7)
- print(""..food.x ..food.y,cam_x+1,9,7)
- print(""..food.x ..food.y,cam_x+food.x-4,food.y-7,7)
+ --print(""..#foods,cam_x+1,1,7)
+ --print(""..food.x ..food.y,cam_x+1,9,7)
+ --print(""..food.x ..food.y,cam_x+food.x-4,food.y-7,7)
  
  -- enemy coordinates on ui
- if #enemies>=1 then
-  print(""..flr(ghost.x),cam_x+1,16,1)
- end
+-- if #enemies>=1 then
+--  print(""..flr(ghost.x),cam_x+1,16,1)
+-- end
  
- if #enemies==0 then
-  print("no enemies here!",player.x,player.y-8,7)
- else
-  print("enemies: "..#enemies,player.x,player.y-8,7)
- end
+ --if #enemies==0 then
+ -- print("no enemies here!",player.x,player.y-8,7)
+ --else
+ -- print("enemies: "..#enemies,player.x,player.y-8,7)
+ --end
 
 --for food in all (foods) do
  
@@ -1093,17 +1093,17 @@ end
 -- ghosts work! (when alone)
 
 function make_enemies()
- --make_skull()
+ make_skull()
  make_ghost()
 end
 
 function draw_enemies()
- --draw_skull()
+ draw_skull()
  draw_ghost()
 end
 
 function move_enemies()
- --move_skull()
+ move_skull()
  move_ghost()
 end
 

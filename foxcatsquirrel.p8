@@ -782,8 +782,9 @@ function draw_levels()
   pal(7,13)
   pal(11,3)
   pal(15,4)
-  pal(10,9)
-  
+  pal(10,2)
+  pal(12,1)
+  pal(14,2)
  end
  
  -- castle inside

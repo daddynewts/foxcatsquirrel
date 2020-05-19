@@ -881,6 +881,12 @@ function draw_menu()
  rectfill(25,55,103,71,1)
  rect(25,55,103,71,7)
  
+ -- rivets
+ pset(27,57,5)
+ pset(27,69,5)
+ pset(101,57,5)
+ pset(101,69,5)
+ 
  print("start",30,61,7)
  -- print("press    to start",29,61,7)
  -- print("c",57,61,12)
@@ -898,6 +904,12 @@ function draw_menu()
  -- feedback bg box
  rectfill(19,100,109,120,1)
  rect(19,100,109,120,12)
+  
+ -- rivets
+ pset(21,102,5)
+ pset(107,102,5)
+ pset(21,118,5)
+ pset(107,118,5)
   
  print("feedback welcome!",31,104,7)
  print("tweet",23,112,12)

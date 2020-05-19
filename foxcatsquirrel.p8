@@ -301,6 +301,22 @@ function player_update()
     player.sliding=true
  end
  
+ -- slide turn to left
+ if player.running
+  and player.dx>=0
+  and btn(⬅️) then
+   player.running=false
+   player.sliding=true
+ end
+ 
+ -- slide turn to right
+ if player.running
+  and player.dx<=0
+  and btn(➡️) then
+   player.running=false
+   player.sliding=true
+  end
+ 
  --jump
  if btnp(❎)
  and player.landed 

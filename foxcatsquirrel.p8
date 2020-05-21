@@ -868,6 +868,7 @@ function draw_menu()
  pset(player.x+10,player.y-1,7)
  
  print("welcome to my game!",player.x+10,player.y-8,0)
+
  -- title box
  rectfill(0,44,127,48,9)
  rectfill(0,49,127,51,4)
@@ -879,13 +880,13 @@ function draw_menu()
    
  -- control bg box
  rectfill(25,55,103,71,1)
- rect(25,55,103,71,7)
+ rect(25,55,103,71,9)
  
  -- rivets
- pset(27,57,5)
- pset(27,69,5)
- pset(101,57,5)
- pset(101,69,5)
+ pset(27,57,10)
+ pset(27,69,10)
+ pset(101,57,10)
+ pset(101,69,10)
  
  print("start",30,61,7)
  -- print("press    to start",29,61,7)
@@ -906,10 +907,10 @@ function draw_menu()
  rect(19,100,109,120,12)
   
  -- rivets
- pset(21,102,5)
- pset(107,102,5)
- pset(21,118,5)
- pset(107,118,5)
+ pset(21,102,10)
+ pset(107,102,10)
+ pset(21,118,10)
+ pset(107,118,10)
   
  print("feedback welcome!",31,104,7)
  print("tweet",23,112,12)

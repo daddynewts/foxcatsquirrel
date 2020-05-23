@@ -71,8 +71,8 @@ end
   sky.y1=128
 
  enemies={
-  skull={skull_sp=13},
-  ghost={ghost_sp=10},
+  ghost={ ghost_sp=10, x=100 },
+  skull={ skull_sp=13, x=10 }
  }
  
  foods={}
@@ -680,7 +680,7 @@ end
 function add_foodpoints()
  points+=flr(10000/timeleft)
  timeleft+=timegain	 --default 25?
- count+=5
+ count+=1
  del(foods,food)
  sfx(eat_sfx)
  crumb=pget(cam_x+(food.x+3),food.y+3)
@@ -1142,8 +1142,8 @@ function make_skull()
  
  for i=1,level+1 do
     skull={
-    x=cam_x-player.x,
-    y=flr(64)-player.y,
+    x=10,--cam_x-player.x,
+    y=10,--flr(64)-player.y,
    }
   add(enemies,skull)
   sfx(skull_sfx)
@@ -1154,8 +1154,8 @@ function make_ghost()
   
   for i=1,1 do
     ghost={
-    x=cam_x-player.x,
-    y=flr(64)-player.y,
+    x=100,--cam_x-player.x,
+    y=100,--flr(64)-player.y,
    }
   add(enemies,ghost)
   sfx(ghost_sfx)
@@ -1166,19 +1166,19 @@ end
 
 function move_skull() 
 
- for skull in all(enemies) do
+ --for skull in all(enemies) do
 -- easy
   skull.x-=((skull.x/100)-(player.x/100))*(player.dx/count+(flr(level+1)))
   skull.y-=((skull.y/100)-(player.y/100))*(player.dy/count+(flr(level+1)))
- end
+ --end
 end
 
 function move_ghost()
  
- for ghost in all(enemies) do
+ --for ghost in all(enemies) do
   ghost.x-=(ghost.x/100)-(food.x/100)
   ghost.y-=(ghost.y/100)-(food.y/100)
- end
+ --end
   if ghost.x<=cam_x
    then ghost.x=cam_x
   end
@@ -1210,26 +1210,26 @@ end
 
 function draw_skull()
 
- for skull in all(enemies) do
+ --for skull in all(enemies) do
   spr(skull_sp,skull.x,skull.y)
   
   if player.x>=skull.x then
    skull_sp=13
   else skull_sp=12
- end
+ --end
 end
 end
 
 function draw_ghost()
 
- for ghost in all(enemies) do
+ --for ghost in all(enemies) do
   spr(ghost_sp,ghost.x,ghost.y)
    
   if player.x>=ghost.x then
    ghost_sp=10
   else ghost_sp=11
   end
- end
+ --end
 end
 -->8
 -- crumbs

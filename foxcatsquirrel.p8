@@ -630,12 +630,14 @@ function draw_youwin()
 end
 
 function draw_clouds()
-	cloud.x+=0.1
+	cloud.x+=rnd(0.5)
 	spr(72,cloud.x,cloud.y)
 	spr(73,cloud.x+8,cloud.y)
+	--spr(72,cloud.x-100,22)
+	--spr(73,cloud.x-92,22)
 	  if cloud.x>=cam_x+128 then
-	   cloud.x=cam_x-8
-	   cloud.y=rnd(flr(20))
+	  cloud.x=cam_x-8
+	  cloud.y=rnd(flr(20))
  end
 end
 -->8
@@ -813,7 +815,6 @@ function draw_levels()
   circfill(126,154,80,3) -- near
   circfill(30,174,110,3) -- near
   circfill(80,16,8,10)
-  draw_clouds()
   draw_clouds()
  end
  

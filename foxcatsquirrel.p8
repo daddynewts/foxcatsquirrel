@@ -33,11 +33,6 @@ end
  explode_size = 1
  explode_amount = flr(10)
 
- -- clouds
- cloud={}
-  cloud.x=rnd(flr(70))
-  cloud.y=rnd(flr(20))
-
  player={
   sp=1,
   x=8, -- default 56, high 8
@@ -75,6 +70,10 @@ end
   sky.y0=0
   sky.x1=1024
   sky.y1=128
+ 
+ clouds={}
+  cloud1={x=73}
+  cloud2={x=-12}
 
  enemies={
   ghost={ ghost_sp=10, x=100 },
@@ -629,15 +628,19 @@ function draw_youwin()
  print("press ❎ to start again",22,52,7)
 end
 
-function draw_clouds()
-	cloud.x+=rnd(0.5)
-	spr(72,cloud.x,cloud.y)
-	spr(73,cloud.x+8,cloud.y)
-	--spr(72,cloud.x-100,22)
-	--spr(73,cloud.x-92,22)
-	  if cloud.x>=cam_x+128 then
-	  cloud.x=cam_x-8
-	  cloud.y=rnd(flr(20))
+function cloud_draw()
+	cloud1.x+=0.5
+	cloud2.x+=0.4
+	spr(72,cloud1.x,5)
+	spr(73,cloud1.x+8,5)
+	spr(72,cloud2.x-10,12)
+ spr(73,cloud2.x-2,12)
+	 if cloud1.x>=cam_x+128 then
+	  cloud1.x=cam_x-8
+	  cloud1.y=rnd(flr(20))
+  elseif cloud2.x>cam_x+280 then
+   cloud2.x=cam_x-8
+   cloud2.y=rnd(flr(20))
  end
 end
 -->8
@@ -815,7 +818,7 @@ function draw_levels()
   circfill(126,154,80,3) -- near
   circfill(30,174,110,3) -- near
   circfill(80,16,8,10)
-  draw_clouds()
+  cloud_draw()
  end
  
  -- jungle

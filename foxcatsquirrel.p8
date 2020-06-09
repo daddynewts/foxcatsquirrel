@@ -628,6 +628,13 @@ function draw_youwin()
  print("press ❎ to start again",22,52,7)
 end
 
+function draw_clouds()
+ cloud1.x+=0.5
+	cloud2.x+=0.4
+	line(cloud1.x,5,cloud1.x+5,5,7)
+	line(cloud2.x,17,cloud2.x+6,17,6)
+end
+
 function cloud_draw()
 	cloud1.x+=0.5
 	cloud2.x+=0.4
@@ -818,7 +825,8 @@ function draw_levels()
   circfill(126,154,80,3) -- near
   circfill(30,174,110,3) -- near
   circfill(80,16,8,10)
-  cloud_draw()
+  --cloud_draw()
+  draw_clouds()
  end
  
  -- jungle
@@ -863,8 +871,7 @@ end
 function level_music()
  if level==0 then
   music(music_level1)
- end 
- if level==1 then
+ elseif level==1 then
   music(music_level2)
  end
 end
@@ -1075,6 +1082,7 @@ function update_menu()
 
  if btnp(❎) then
   sfx(menu_sfx)
+  level_music()
   init_game()
   _update=update_game
   _draw=draw_game

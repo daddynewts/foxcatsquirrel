@@ -5,6 +5,8 @@ __lua__
 
 function _init()
 
+ delay=100
+ 
  -- sfx
  intro_jingle = 11
  eat_sfx = 14
@@ -124,7 +126,7 @@ end
 
 function init_menu()
  sfx(intro_jingle)
- timeleft=78
+ timeleft=127
  del(foods,food)
  del(balloons,balloon)
  del(enemies,skull)
@@ -187,7 +189,8 @@ end
 
 function update_gameover()
 	music(-1)
-	if btnp(❎) then
+ delay-=1
+	if delay<=50 and	btnp(❎) then
 	 _init()
 	end
 end
@@ -837,9 +840,9 @@ function draw_levels()
   circfill(99,134,80,11) -- far hill
   circ(99,134,80,7)
   circfill(126,154,80,3) -- near hill
-  circ(126,154,80,1)
+  circ(126,154,80,5)
   circfill(30,174,110,3) -- near hill
-  circ(30,174,110,5)
+  circ(30,174,110,1)
   circfill(80,16,8,10) -- sun
   --cloud_draw()
   draw_clouds()
@@ -984,12 +987,14 @@ function draw_menu()
 end
 
 function update_mainmenu()
+ delay-=2
  player_animate()
  --player_update()
- if btnp(❎) then
+ if delay<=50 and btnp(❎) then
   sfx(9)
   init_game()
   level_music()
+  delay=100
  elseif btnp(🅾️) then
   sfx(9)
   _draw = draw_tutorial

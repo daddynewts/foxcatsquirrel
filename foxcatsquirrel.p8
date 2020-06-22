@@ -7,8 +7,10 @@ function _init()
 
  delay=100
  
- angle=0
- approach=0
+ enemyangle=0
+ enemyapproach=0
+ bonusangle=0
+ bonusapproach=0 
  
  -- sfx
  intro_jingle = 6
@@ -82,10 +84,17 @@ end
   cloud2={x=rnd(flr(10))+60,speed=0.4}--{x=-12}
   cloud3={x=rnd(flr(10))+90,speed=0.5}
 
- enemies={
-  ghost={ ghost_sp=10, x=100 },
-  skull={ skull_sp=13, x=10 }
- }
+ --enemies={
+  ghost={}
+   ghost_sp=10
+   ghost.x=100
+   ghost.y=0
+   
+  skull={}
+   skull_sp=13
+   skull.x=10
+   skull.y=0
+ --}
  
  foods={}
   food={
@@ -147,9 +156,6 @@ function init_game()
  make_balloon()
  if count==5 then
   make_enemies()
--- elseif count==11 then
---  make_ghost()
---  make_skull()
  end  
  _update = update_game
  _draw = draw_game
@@ -170,7 +176,11 @@ function update_game()
   --level_gimmicks()
   player_animate()
   collide_food()
-  if #enemies>=1 then
+  move_enemies()
+  if #ghost>=1 then
+   move_enemies()
+   collision_enemies()
+  elseif #skull>=1 then
    move_enemies()
    collision_enemies()
   end
@@ -182,12 +192,7 @@ function update_game()
    move_balloons()
    collide_balloon()
   end
-  if timeleft >=78 then
-   timeleft=78
-  end
-  if timeleft <= 2 then
-   init_gameover() --time up  
-  end
+  timecheck()  
   if player.y>=127 then
    init_gameover() -- fall down
  end
@@ -200,6 +205,16 @@ function update_gameover()
 	 _init()
 	end
 end
+
+function timecheck()
+ if timeleft >=78 then
+  timeleft=78
+ end
+ if timeleft <= 2 then
+  init_gameover() --time up  
+ end
+end
+
 -->8
 -- map collision
 
@@ -546,8 +561,10 @@ function draw_game()
  draw_fx()
  draw_bonus()
  draw_ui()
- if #enemies>=1 then
-  draw_enemies()
+ if #ghost>=1 then
+  draw_ghost()
+ elseif #skull>=1 then
+  draw_skull()
  end
  draw_balloon()
 end
@@ -558,7 +575,7 @@ function draw_ui()
  --print(""..timeleft,cam_x+1,1,7)
  
  -- angle
-  print("approach: "..approach,cam_x+1,1,7)
+  print("approach: "..enemyapproach,cam_x+1,1,7)
  -- food hitbox
  -- rect(food.x-20,food.y-20,food.x+24,food.y+24,7)
  
@@ -744,9 +761,9 @@ function collide_food()
    then
     add_foodpoints()
     explode(food.x,food.y,explode_size,explode_colours,explode_amount)
-    if #enemies>=1 then
-     orbit=false
-    end
+    --if #enemies>=1 then
+   --  orbit=false
+   -- end
    end
   end
 end
@@ -776,7 +793,10 @@ function make_bonus()
 end
 
 function move_bonus()
- bonus.y-=-0.2*cos(angle)
+ bonusapproach=atan2(bonus.x,food.y)
+ bonusangle+=(3.141592654/bonusapproach)/180
+
+ bonus.y-=0.2*cos(bonusangle)
 end
 
 function collide_bonus()
@@ -1250,7 +1270,7 @@ end
 
 function make_skull()
  
- for i=1,level+1 do
+ for i=1,level do
     skull={
     x=cam_x-player.x,
     y=flr(64)-player.y,
@@ -1283,7 +1303,7 @@ end
 
 function move_ghost()
  enemyapproach=atan2(food.x+4,ghost.y)
- angle+=(3.141592654/enemyapproach)/180
+ enemyangle+=(3.141592654/enemyapproach)/180
  
  --atan2 gives angle of 
  --two points

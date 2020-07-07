@@ -18,17 +18,17 @@ function _init()
  enemyapproach=0
  
  -- sfx
- intro_jingle = 6
- eat_sfx = 14
- death_sfx = 1
- jump_sfx = 0
- slide_sfx = 2
- skull_sfx = 3
- bonus_sfx = 13
- spring_sfx = 4
- ghost_sfx = 12
- menu_sfx = 10
- balloon_sfx = 13
+ intro_jingle = 6,1
+ eat_sfx = 14,1
+ death_sfx = 1,1
+ jump_sfx = 0,1
+ slide_sfx = 2,1
+ skull_sfx = 3,1
+ bonus_sfx = 13,1
+ spring_sfx = 4,1
+ ghost_sfx = 12,1
+ menu_sfx = 10,1
+ balloon_sfx = 13,1
  --shockwave_sfx = 2
 
  -- music
@@ -95,12 +95,11 @@ end
   cloud3={x=rnd(flr(10))+90,speed=0.5}
 
  enemies={}
-
- skull={
+  skull={
    sp=13,
    x=10,
    y=0
- }
+  }
 
  ghost={
   sp=10,
@@ -108,7 +107,6 @@ end
   y=0,
   orbit=false
  }
- 
   
  
  foods={}
@@ -198,8 +196,8 @@ function init_menu()
  timeleft=127
 	del(foods,food)
  del(balloons,balloon)
- del(skull,skull)
- del(ghost,ghost)
+ del(enemies,skull)
+ del(enemies,ghost)
   _update = update_mainmenu
   _draw = draw_menu
 end
@@ -1359,7 +1357,7 @@ function make_skull()
     x=cam_x-player.x,
     y=flr(64)-player.y,
    }
-  add(skull,skull)
+  add(enemies,skull)
   sfx(skull_sfx)
  end
 end
@@ -1370,7 +1368,7 @@ function make_ghost()
    x=cam_x-player.x,
    y=flr(64)-player.y,
    }
-  add(ghost,ghost)
+  add(ghosts,ghost)
   sfx(ghost_sfx)
   ghost.orbit=false
  end
@@ -1378,7 +1376,7 @@ end
 
 function move_skull() 
 
- --for skull in all(enemies) do
+-- for skull in all(enemies) do
 -- easy
   skull.x-=((skull.x/100)-(player.x/100))*(player.dx/count+(flr(level+1)))
   skull.y-=((skull.y/100)-(player.y/100))*(player.dy/count+(flr(level+1)))
@@ -1420,13 +1418,12 @@ end
 
 function collision_enemies()
 
- for enemy in all(enemies) do
+ for skull in all(skulls) do
  
-  if  enemy.y > player.y-4
-  and enemy.y < player.y+4
-  and enemy.x > player.x-4
-  and enemy.x < player.x+4 then
-      del(enemies,enemy)
+  if  skull.y > player.y-4
+  and skull.y < player.y+4
+  and skull.x > player.x-4
+  and skull.x < player.x+4 then
       sfx(1)
       init_gameover()  
   end
@@ -1805,7 +1802,7 @@ __music__
 02 07050650
 01 52111044
 02 13111044
-00 57151416
+04 57151416
 01 181c4344
 00 191c1844
 00 1a1c5544

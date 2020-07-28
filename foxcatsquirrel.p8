@@ -1582,11 +1582,11 @@ function draw_levelover()
 -- print("your score:".. points,33,54,0)
  print("your score:".. points,cam_x+34,54,7)
  
- rectfill(cam_x+23,108,cam_x+98,121,1)
- rect(cam_x+23,108,cam_x+98,121,12)
+-- rectfill(cam_x+46,108,cam_x+81,121,1)
+-- rect(cam_x+46,108,cam_x+81,121,12)
  
- print("press   to restart",cam_x+26,112,7)
- spr(145,cam_x+48,111)
+-- print("press   ",cam_x+49,112,7)
+-- spr(145,cam_x+71,111)
 end
 
 function draw_gameover()
@@ -1600,11 +1600,11 @@ function draw_gameover()
 -- rectfill(cam_x+33,53,cam_x+93,59,0)
  print("your score: ".. points,cam_x+32,56,7)
  
- rectfill(cam_x+23,108,cam_x+98,121,1)
- rect(cam_x+23,108,cam_x+98,121,12)
+-- rectfill(cam_x+20,108,cam_x+107,121,1)
+-- rect(cam_x+20,108,cam_x+107,121,12)
  
- print("press   to restart",cam_x+26,112,7)
- spr(145,cam_x+48,111)
+-- print("press   to try again!",cam_x+23,112,7)
+-- spr(145,cam_x+45,111)
 end
 
 function draw_youwin()
@@ -1623,9 +1623,9 @@ function draw_youwin()
  print("score: "..points,cam_x+44,68,7)
  
  -- "press to restart" box
- rectfill(cam_x+20,108,cam_x+100,121,1)
- rect(cam_x+20,108,cam_x+100,121,12)
- print("press ❎ to restart",cam_x+23,112,7)
+-- rectfill(cam_x+20,108,cam_x+100,121,1)
+-- rect(cam_x+20,108,cam_x+100,121,12)
+-- print("press ❎ to restart",cam_x+23,112,7)
 
 end
 -->8

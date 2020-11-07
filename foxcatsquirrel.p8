@@ -47,10 +47,12 @@ end
  -- effects settings
  explode_size = 1
  explode_amount = flr(12)
-
+ explode_colours = {9} 
+ 
  shockwave_size = 5
  shockwave_amount = 1
  shockwave_cooldown = 0
+ shockwave_colours = {10,9,8,4,6}
   
  draught={
   x=402,
@@ -459,7 +461,7 @@ function player_update()
  
   -- shockwave 
   if btnp(🅾️) then
-   shockwave()
+   shockwave(player.x,player.y,shockwave_width,shockwave_colours,shockwave_amount)
   end
  end
 
@@ -1774,7 +1776,7 @@ function draw_ghost()
  end
 end
 -->8
--- crumbs
+-- effects
 
 function add_fx(x,y,die,dx,dy,grav,grow,shrink,r,c_table)
     local fx={
@@ -1796,28 +1798,48 @@ end
 
 function draw_fx()
  for fx in all(effects) do
-        --draw pixel for size 1, draw circle for larger
-        if fx.r<=1 then
-            pset(fx.x,fx.y,fx.c)
-        else
-          circ(fx.x,fx.y,fx.r,sky.colour+1)
-          circ(fx.x,fx.y,fx.r+1,7)
-        end
+  --draw pixel for size 1, draw circle for larger
+    if fx.r<=1 then
+     pset(fx.x,fx.y,crumb)
+    else
+     circ(fx.x,fx.y,fx.r,fx.c)
+     circ(fx.x,fx.y,fx.r+2,fx.c)
     end
+  end
 end
 
 function update_fx()
 	 for fx in all(effects) do
   --lifetime
-  fx.t+=3 -- default = 2
+  fx.t+=2.5 -- size of circle
+          -- default = 2
   if fx.t>fx.die then del(effects,fx) end
+
+  if fx.t/fx.die < 1/#fx.c_table then
+    fx.c=fx.c_table[1]
+
+    elseif fx.t/fx.die < 2/#fx.c_table then
+     fx.c=fx.c_table[2]
+
+    elseif fx.t/fx.die < 3/#fx.c_table then
+     fx.c=fx.c_table[3]
+
+    elseif fx.t/fx.die < 4/#fx.c_table then
+     fx.c=fx.c_table[4]
+
+    elseif fx.t/fx.die < 5/#fx.c_table then
+     fx.c=fx.c_table[5]
+
+    else
+     fx.c=fx.c_table[6]
+    end
 
    --physics
     if fx.grav then fx.dy+=.25 end
-    if fx.grow then fx.r+=.4 end
+    if fx.grow then fx.r+=.7 end
     if fx.shrink then fx.r-=.1 end
    
-    fx.c=crumb
+    --fx.c=crumb
    
    --move
     fx.x+=fx.dx
@@ -1847,18 +1869,18 @@ end
 function shockwave(x,y,r,c_table,num)
  if shockwave_cooldown<=20 then
   for i=0, 1 do
-        --settings
-        add_fx(
-            player.x+3,  -- x
-            player.y+3,  -- y
-            80,-- die
-            0,         -- dx
-            0,       -- dy
-            false,     -- gravity
-            true,     -- grow
-            false,      -- shrink
-            5         -- radius
-      --      c_table    -- color_table
+    --settings
+    add_fx(
+      player.x+3,  -- x
+      player.y+3,  -- y
+      80,-- die
+      0,         -- dx
+      0,       -- dy
+      false,     -- gravity
+      true,     -- grow
+      false,      -- shrink
+      1,         -- radius
+      c_table    -- color_table
         )
     shockwave_cooldown=100
     end

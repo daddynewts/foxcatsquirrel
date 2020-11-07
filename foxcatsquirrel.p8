@@ -48,7 +48,10 @@ end
  explode_size = 1
  explode_amount = flr(12)
 
- -- fire
+ shockwave_size = 5
+ shockwave_amount = 1
+ shockwave_cooldown = 0
+  
  draught={
   x=402,
   y=100,
@@ -70,17 +73,6 @@ end
   x3=512,
  }
  
- waterfall={
-  x1=50,
-  y1=80,
-  x2=77,
-  y2=112,
-  lx1=53,
-  ly1=81,
-  ly2=86,
-  ly3=91,
- }
-
  player={
   sp=1,--165
   x=16, -- default 8
@@ -91,9 +83,9 @@ end
   dx=0, -- means player is not moving at the start
   dy=0,
   max_dx=3,	-- default 3
-  max_dy=4, -- default 3
+  max_dy=4.5, -- default 3
   acc=0.5, -- default 0.5
-  boost=4, -- default 4
+  boost=3.8, -- default 4
   anim=0,
   running=false,
   jumping=false,
@@ -218,7 +210,6 @@ function test_ui()
  --print("vplatform.y: "..vplatform.y,cam_x+1,9,7)
  --print("hplatform.x: "..hplatform.x,cam_x+1,17,7)
  --print("delay: "..delay,cam_x,1,7)
- print("player.dy: "..player.dy,cam_x+1,17,7)
  --food hitbox
  --rect(food.x-20,food.y-20,food.x+24,food.y+24,7)
 end
@@ -389,11 +380,7 @@ function player_update()
   and not player.gliding then
   player.dy-=0.6
   sfx(slide_sfx,0)
- else
- 
- -- default
-   friction=0.85
-   gravity=0.32
+
  end
 
  -- physics
@@ -423,10 +410,6 @@ function player_update()
  and not player.jumping then
     player.running=false
     player.sliding=true
- end
- 
- if player.sliding then
-   friction=1
  end
  
  -- slide turn to left
@@ -461,65 +444,25 @@ function player_update()
     player.sp=23
  end
  
- 
- -- slide turn to left
- if player.running
-  and player.dx>=0
-  and player.landed
-  and btn(⬅️) then
-   player.running=false
-   player.sliding=true
-   sfx(slide_sfx,0)
- end
- 
- -- air turn to right
- if player.running
-  and player.dx<=0
-  and player.landed
-  and btn(➡️) then
-   player.running=false
-   player.sliding=true
-   sfx(slide_sfx,0)
-  end
- 
  -- gliding
  if btn(❎)
  and player.falling
- and not player.jumping
  then player.gliding=true
       player.falling=false
       player.jumping=false
       player.dy/=1.3
       glidetime+=0.2
- else if not btn(❎)
-  and player.falling
+ else if player.falling
   then player.gliding=false
       glidetime=0
  end 
  
- -- running - unsatisfying
- --if btn(🅾️)
- --and player.landed
- --and player.running
- -- then 
- --  player.dx=(player.dx*1.2)
- --  player.max_dx=5
- -- end
- --end
- 
- -- shockwave trial
- --if btn(🅾️) then
- -- make_shockwave()
- -- end
+  -- shockwave 
+  if btnp(🅾️) then
+   shockwave()
+  end
  end
 
-  --fast fall
- if btn(⬇️) 
- and not player.landed
- then player.fastfall=true
-      player.dy=10
- end
- 
  -- drop-through
  --if player.landed
  if collide_map(player,"down",0)
@@ -660,6 +603,13 @@ end
 
 function limit_speed(num,maximum)
   return mid(-maximum,num,maximum)
+end
+
+function make_shockwave()
+ 
+ 
+ if #skulls==0 then
+ end	
 end
 -->8
 	-- draws
@@ -836,6 +786,7 @@ end
 function level_gimmicks()
 
  leveltime+=0.01
+ shockwave_cooldown-=1
  
  if level==1 then
   vplatform.x=226
@@ -1787,7 +1738,7 @@ function collision_enemies()
       init_gameover()  
   end
  end
-  
+ 
  for ghost in all(ghosts) do
  
   if  ghost.y > player.y-4
@@ -1845,22 +1796,28 @@ end
 
 function draw_fx()
  for fx in all(effects) do
-  pset(fx.x,fx.y,fx.c)
- end
+        --draw pixel for size 1, draw circle for larger
+        if fx.r<=1 then
+            pset(fx.x,fx.y,fx.c)
+        else
+          circ(fx.x,fx.y,fx.r,sky.colour+1)
+          circ(fx.x,fx.y,fx.r+1,7)
+        end
+    end
 end
 
 function update_fx()
 	 for fx in all(effects) do
   --lifetime
-  fx.t+=2
+  fx.t+=3 -- default = 2
   if fx.t>fx.die then del(effects,fx) end
 
    --physics
     if fx.grav then fx.dy+=.25 end
-    if fx.grow then fx.r+=.1 end
+    if fx.grow then fx.r+=.4 end
     if fx.shrink then fx.r-=.1 end
-
-   fx.c=crumb
+   
+    fx.c=crumb
    
    --move
     fx.x+=fx.dx
@@ -1875,7 +1832,7 @@ function explode(x,y,r,c_table,num)
    add_fx(
     x,         -- x
     y,         -- y
-    20, --30+rnd(25),-- die
+    50, --30+rnd(25),-- die
     rnd(2)-1,  -- dx
     rnd(2)-1,  -- dy
     true,     -- gravity
@@ -1885,6 +1842,28 @@ function explode(x,y,r,c_table,num)
     c_table    -- color_table
         )
     end
+end
+
+function shockwave(x,y,r,c_table,num)
+ if shockwave_cooldown<=20 then
+  for i=0, 1 do
+        --settings
+        add_fx(
+            player.x+3,  -- x
+            player.y+3,  -- y
+            80,-- die
+            0,         -- dx
+            0,       -- dy
+            false,     -- gravity
+            true,     -- grow
+            false,      -- shrink
+            5         -- radius
+      --      c_table    -- color_table
+        )
+    shockwave_cooldown=100
+    end
+  else
+  end
 end
 __gfx__
 00000000079004007090040007900400709004000790040070900400009004007090040000000000000000000000000000111100001111000000000000000000
@@ -2162,7 +2141,7 @@ __map__
 4849494a0000000000000000000000000000000000000000000000000000000000000000000000000000000000004041420038000000000000000000003800400000000000c6e80000e7c80000000000d700000000000000000000000000004100000000000000000000000000000000000000002b0000000000002b00000000
 0000000000000000000000000000000000000000000024363625000000000024404142000000000000000000404141414200380052000000000000000038004000000000000000000000000000000000d70000000000000000000000000000410000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000404142000000000000000000404141414200380000670000000067000038004000000000000000000000000000000000d70000000000000000000000000000410000000000000000000000000000000000000000000000000000000000000000
-f0f1f1f20000003e3f000000f0f1f1f200290054000000003c3b000054003c00404142355454000000545435404141414200370054770000000077540037004035000000000000000000000000000035413500000000003500000000000000410000000000000000000000000000000000000000000000000000000000000000
+f04949494949494949494949494949f200290054000000003c3b000054003c00404142355454000000545435404141414200370054770000000077540037004035000000000000000000000000000035413500000000003500000000000000410000000000000000000000000000000000000000000000000000000000000000
 e0d3d3d3f0f1f1f2f0f1f1f2e0d3d3d3101210121210101210121212101210124041414141426868684041414141414141414141414141414141414141414141c6c7c80000c6c7c7c7c7c80000c6c7c8421212121212121212121212121212416161616161616161616161616161616127272727272727272727272727272727
 e0d3d3d3d3d3d3d3d3d3d3d3e0d3d3d313131313131313131313131313131313000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003333333333333333333333333333330000000000000000000000000000000000000000000000000000000000000000
 __sfx__

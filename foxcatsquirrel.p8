@@ -25,13 +25,13 @@ function _init()
  death_sfx = 1
  jump_sfx = 0
  slide_sfx = 2
- skull_sfx = 3
+ skull_sfx = 12
  bonus_sfx = 13
  spring_sfx = 4
  ghost_sfx = 12
  menu_sfx = 10
  balloon_sfx = {13,15}
- --shockwave_sfx = 2
+ shockwave_sfx = 3
 
  -- music
  music_level1 = 0 
@@ -124,11 +124,11 @@ end
   
  --enemies={
  ghosts={
-  ghost={ ghost_sp=10, x=100 }
+  ghost={ ghost_sp=10, x=100, dx=0, dy=0}
  }
  
  skulls={ 
-  skull={ skull_sp=13, x=10 }
+  skull={ skull_sp=13, x=10, dx=0, dy=0 }
  }
   
  foods={}
@@ -213,12 +213,15 @@ function test_ui()
  --print("vplatform.y: "..vplatform.y,cam_x+1,9,7)
  --print("hplatform.x: "..hplatform.x,cam_x+1,17,7)
  if is_shockwave==true then
-  print("shockwave",cam_x,1,7)
- else
+  print("shockwave:"..shockwave_x,cam_x,1,7)
+  -- hitbox
+ rect(shockwave_x-20,shockwave_y-20,shockwave_x+20,shockwave_y+20,7)
+   else
   print("no shockwave",cam_x,1,7)
  end
  --food hitbox
  --rect(food.x-20,food.y-20,food.x+24,food.y+24,7)
+ 
 end
 -->8
 -- update and game loop
@@ -275,7 +278,7 @@ function update_game()
   if player.y>=127 then
    init_gameover() -- fall down
  end
-  if shockwave_cooldown<=20 then
+  if shockwave_cooldown<=60 then
    is_shockwave=false
   end
 end
@@ -1758,6 +1761,18 @@ function collision_enemies()
       init_gameover()  
  end
  end
+ 
+ if is_shockwave==true then
+  for skull in all(skulls) do
+ 
+  if  skull.y > shockwave_y-20
+  and skull.y < shockwave_y+20
+  and skull.x > shockwave_x-20
+  and skull.x < shockwave_x+20 then
+   skull.x-=5
+   end
+  end
+ end
 end
 
 function draw_skull()
@@ -1820,11 +1835,11 @@ function update_fx()
 	 for fx in all(effects) do
   --lifetime
   fx.t+=2.5 -- size of circle
-          -- default = 2
+             -- default = 2
   if fx.t>fx.die then del(effects,fx) end
 
   if fx.t/fx.die < 1/#fx.c_table then
-    fx.c=fx.c_table[1]
+     fx.c=fx.c_table[1]
 
     elseif fx.t/fx.die < 2/#fx.c_table then
      fx.c=fx.c_table[2]
@@ -1859,9 +1874,9 @@ function explode(x,y,r,c_table,num)
    add_fx(
     x,         -- x
     y,         -- y
-    50, --30+rnd(25),-- die
+    30+rnd(25),-- die
     rnd(2)-1,  -- dx
-    rnd(2)-1,  -- dy
+    rnd(3)-2,  -- dy
     true,     -- gravity
     false,     -- grow
     false,      -- shrink
@@ -1872,7 +1887,7 @@ function explode(x,y,r,c_table,num)
 end
 
 function shockwave(x,y,r,c_table,num)
- if shockwave_cooldown<=20 then
+ if shockwave_cooldown<=0 then
   for i=0, 1 do
     --settings
     add_fx(
@@ -1884,11 +1899,14 @@ function shockwave(x,y,r,c_table,num)
       false,     -- gravity
       true,     -- grow
       false,      -- shrink
-      1,         -- radius
+      1, --1       -- starting radius
       c_table    -- color_table
         )
-    is_shockwave=true
-    shockwave_cooldown=100
+     shockwave_x=player.x+3
+     shockwave_y=player.y+3
+     is_shockwave=true
+     shockwave_cooldown=100
+     sfx(shockwave_sfx)
     end
   else
   end

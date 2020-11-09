@@ -12,6 +12,7 @@ function _init()
  count=0
  points=0
  addfood=1
+ is_shockwave=false
  
  init_times()
 
@@ -211,7 +212,11 @@ function test_ui()
  --print("approach: "..enemyapproach,cam_x+1,17,7) 
  --print("vplatform.y: "..vplatform.y,cam_x+1,9,7)
  --print("hplatform.x: "..hplatform.x,cam_x+1,17,7)
- --print("delay: "..delay,cam_x,1,7)
+ if is_shockwave==true then
+  print("shockwave",cam_x,1,7)
+ else
+  print("no shockwave",cam_x,1,7)
+ end
  --food hitbox
  --rect(food.x-20,food.y-20,food.x+24,food.y+24,7)
 end
@@ -270,6 +275,9 @@ function update_game()
   if player.y>=127 then
    init_gameover() -- fall down
  end
+  if shockwave_cooldown<=20 then
+   is_shockwave=false
+  end
 end
 
 function update_gameover()
@@ -1827,11 +1835,8 @@ function update_fx()
     elseif fx.t/fx.die < 4/#fx.c_table then
      fx.c=fx.c_table[4]
 
-    elseif fx.t/fx.die < 5/#fx.c_table then
-     fx.c=fx.c_table[5]
-
     else
-     fx.c=fx.c_table[6]
+     fx.c=fx.c_table[5]
     end
 
    --physics
@@ -1882,6 +1887,7 @@ function shockwave(x,y,r,c_table,num)
       1,         -- radius
       c_table    -- color_table
         )
+    is_shockwave=true
     shockwave_cooldown=100
     end
   else

@@ -1769,7 +1769,8 @@ function collision_enemies()
   and skull.y < shockwave_y+20
   and skull.x > shockwave_x-20
   and skull.x < shockwave_x+20 then
-   skull.x-=5
+   skull.x+=2
+   skull.y+=2
    end
   end
  end

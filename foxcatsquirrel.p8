@@ -214,10 +214,10 @@ function test_ui()
  --print("vplatform.y: "..vplatform.y,cam_x+1,9,7)
  --print("hplatform.x: "..hplatform.x,cam_x+1,17,7)
  --food hitbox
- --rect(food.x-20,food.y-20,food.x+24,food.y+24,7)
- if #skulls==1 then
-  print("angle"..enemyapproach,cam_x,1,1)
+ if #skulls>=1 then
+  print("skull.x: "..skull.x,0,0,1)
  end
+ --rect(food.x-20,food.y-20,food.x+24,food.y+24,7)
 end
 -->8
 -- update and game loop
@@ -1659,6 +1659,7 @@ function make_skull()
    }
   add(skulls,skull)
   sfx(skull_sfx)
+  skullchase=true
  end
 end
 
@@ -1677,10 +1678,12 @@ end
 
 function move_skull() 
 
- for skull in all(skulls) do
+ if skullchase==true then
+  for skull in all(skulls) do
 -- easy
-  skull.x-=((skull.x/100)-(player.x/100))*(player.dx/count+1)
-  skull.y-=((skull.y/100)-(player.y/100))*(player.dy/count+1)
+   skull.x-=((skull.x/100)-(player.x/100))*(player.dx/count+1)
+   skull.y-=((skull.y/100)-(player.y/100))*(player.dy/count+1)
+  end
  end
 end
 
@@ -1759,20 +1762,22 @@ function collision_enemies()
  if is_shockwave==true then
   enemyapproach=sin(shockwave_x,skulls.skull.y)
   enemyangle+=(3.141592654/enemyapproach)/180
-  for skull in all(skulls) do
+ 
+ for skull in all(skulls) do
  
   if  skull.y > shockwave_y-20
   and skull.y < shockwave_y+20
   and skull.x > shockwave_x-20
   and skull.x < shockwave_x+20
    then
-    skull.x-=sin(enemyangle)
-    skull.y-=enemyapproach+cos(enemyangle)
-   --    ghost.y=food.y-(10*sin(enemyangle))
-   -- skull.x+=((skull.x/10)+(player.x/100))
-   -- skull.y+=((skull.y/10)-(shockwave_y/100))
+    skull.x-=cos(enemyangle)-((skull.x-shockwave_x)/5)
+    skull.y-=sin(enemyangle)--(skull.y-shockwave_y)
+    skullchase=false
    end
   end
+ end
+  if is_shockwave==false then
+  skullchase=true
  end
 end
 
@@ -1822,7 +1827,8 @@ end
 
 function draw_fx()
  for fx in all(effects) do
-  --draw pixel for size 1, draw circle for larger
+  --draw pixel for size 1,
+  --draw circle for larger
     if fx.r<=1 then
      pset(fx.x,fx.y,crumb)
     else
@@ -1836,7 +1842,7 @@ function update_fx()
 	 for fx in all(effects) do
   --lifetime
   fx.t+=2.5 -- size of circle
-             -- default = 2
+             -- default = 2.5
   if fx.t>fx.die then del(effects,fx) end
 
   if fx.t/fx.die < 1/#fx.c_table then
@@ -1888,6 +1894,7 @@ function explode(x,y,r,c_table,num)
 end
 
 function shockwave(x,y,r,c_table,num)
+ 
  if shockwave_cooldown<=0 then
   for i=0, 1 do
     --settings
@@ -1903,8 +1910,8 @@ function shockwave(x,y,r,c_table,num)
       1, --1       -- starting radius
       c_table    -- color_table
         )
-     shockwave_x=player.x+3
-     shockwave_y=player.y+3
+     shockwave_x=(player.x+3)
+     shockwave_y=(player.y+3)
      is_shockwave=true
      shockwave_cooldown=100
      sfx(shockwave_sfx)

@@ -162,7 +162,7 @@ function init_times()
  airtime=0
  glidetime=0
  leveltime=1
- timegain=10
+-- timegain=10
  delay=100
  timededuction=0
  platformtime=0
@@ -202,11 +202,7 @@ function test_mode()
 -- edit test parameters here
 -- not in the main body!
 -- sfx(-2)
- --music(-1) -- music off
--- timegain=count -- default 12
--- timeleft-=timededuction
--- timededuction=25 -- default 25?
- --0.1*(count/6) -- default 0.1*(count/6)
+--music(-1) -- music off
 end
 
 function test_ui()
@@ -256,7 +252,7 @@ function init_gameover()
 end
 
 function update_game()
---  test_mode()
+  test_mode()
   update_fx()
   player_update()
   level_gimmicks()
@@ -290,7 +286,10 @@ function update_gameover()
 end
 
 function timecheck()
+ timegain=count -- default 12
  timeleft-=timededuction
+ timededuction=0.1*(count/6) -- default 0.1*(count/6)
+
  if timeleft >=78 then
   timeleft=78
  end
@@ -985,8 +984,7 @@ end
 function add_foodpoints()
  points+=100+10*flr(glidetime)
  -- points+=flr(10000/timeleft)
- timeleft+=timegain	--default 25?
- timededuction+=(count-2/10)
+ timeleft+=timegain
  count+=addfood
  del(foods,food)
  sfx(rnd(eat_sfx),1)
@@ -1658,7 +1656,7 @@ function make_skull()
  for i=1,1 do
   skull={
     x=cam_x+52,
-    y=flr(64)-player.y,
+    y=-10-player.y,
    }
   add(skulls,skull)
   sfx(skull_sfx)

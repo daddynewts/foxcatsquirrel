@@ -8,7 +8,7 @@ __lua__
 
 function _init()
 
- level=2 -- def 0, playground 5
+ level=0 -- def 0, playground 5
  count=0
  points=0
  addfood=10 -- 7 for instant enemy on l1
@@ -163,6 +163,7 @@ end
 
 function init_times()
  airtime=0
+ m=0
  glidetime=0
  leveltime=1
 -- timegain=10
@@ -738,27 +739,6 @@ function draw_clouds()
  
 end
 
-function draw_waterfall()
-	rectfill(waterfall.x1,waterfall.y1,waterfall.x2,waterfall.y2,12)
-  waterfall.ly1+=2
-  waterfall.ly2+=2
-  waterfall.ly3+=2
- if waterfall.ly2>=waterfall.y2 then
---   waterfall.ly1=80
-   waterfall.ly2=80
- elseif waterfall.ly1>=waterfall.y2 then
-   waterfall.ly1=80
- elseif waterfall.ly3>=waterfall.y2 then
-   waterfall.ly3=80
--- waterfall.lx1=flr(rnd(18)+waterfall.x1)
-  end
--- line(waterfall.lx1,waterfall.ly1,waterfall.lx1,waterfall.ly2,7)
- print("░░░",waterfall.lx1+0.9*sin(leveltime),waterfall.ly1,7)
- print("░░░",waterfall.lx1+0.7*cos(leveltime),waterfall.ly2,1)
- print("░░░",waterfall.lx1+0.6*sin(leveltime),waterfall.ly3,13)
- print("░░░",waterfall.lx1+0.5*cos(leveltime),waterfall.ly1+7,13)
-end
-
 function draw_splashes()
  -- level 1
  --spr(splash.sp,splash.x1,splash.y1)
@@ -854,45 +834,7 @@ function level_gimmicks()
 -- player.y>=80 then
 --  player.dy-= 2
  end
-  
- --falling platforms
-  
- if  fallplatform.y > player.y -- -4
-  and fallplatform.y < player.y+10 -- +4
-  and fallplatform.x > player.x-8 -- 4
-  and fallplatform.x < player.x+8
-   and player.dy>0
-   then player.fallplatform=true
-  else player.fallplatform=false
-       end
- 
- if player.fallplatform then
-  platformtime+=1
-  player.y=fallplatform.y-8
-  player.dy=0
-  player.landed=true
-  player.falling=false
-  player.gliding=false
- end
 
- if platformtime>=fallplatform.wobbletime
- and platformtime<=fallplatform.falltime
-  then fallplatform.y+=cos(platformtime/4)
- 
- else if platformtime>=fallplatform.falltime then
-  fallplatform.y+=flr(platformtime/20)
- 
- if fallplatform.y>=fallplatform.dropheight then
-   fallplatform.y+=5*flr(leveltime)
-    fallplatform.respawn+=1
-  end
- end
- end
- 
- if fallplatform.respawn>=50 then
-  init_platforms()
-  platformtime=0
- end
 end
 
 function draw_platforms()
@@ -901,8 +843,6 @@ function draw_platforms()
  
  spr(hplatform.lsprite,hplatform.x,hplatform.y)
  spr(hplatform.rsprite,hplatform.x+8,hplatform.y)
-
- spr(fallplatform.sp,fallplatform.x,fallplatform.y)
 end
 -->8
 -- grabbables
@@ -1028,7 +968,7 @@ function make_bonus()
    bonus={
     sprite=14,
     x=60+(cam_x),
-    y=rnd(flr(20)),
+    y=rnd(flr(20))+10,
    }
    add(bonuses,bonus)
   end
@@ -1293,7 +1233,7 @@ function draw_levels()
  -- final level - volcano
  if level==4 then
   pal()
---  sky.colour=1
+  sky.colour=2
 --  circfill(576,100,108,1)
 --  circ(576,100,108,2)
 --  circfill(576,10,20,0)
@@ -1560,6 +1500,7 @@ function init_levelover()
   del(skulls,skull)
   count=0
   level+=1
+  m+=12
   timeleft=127--timeleft+(timegain*2)
   player.x=(level*128)+63
   player.y=16
@@ -1575,19 +1516,38 @@ end
 
 function draw_levelover()
  pal()
+ 
 
  -- full-width stripe
- rect(cam_x,33,cam_x+128,63,7)
- rect(cam_x,32,cam_x+128,64,7)
- rectfill(cam_x,34,cam_x+127,62,sky.colour)
+  m+=16
+ --  rectfill(cam_x,31,cam_x+m,65,10)
+ --  rectfill((cam_x+128)-m,32,cam_x+128,64,1)
+  
+ circfill(cam_x+64,64,m,2)
+ circfill(cam_x+64,64,m-40,4)
+ circfill(cam_x+64,64,m-80,9)
+ circfill(cam_x+64,64,m-120,7)
  
+ -- blue fill
+-- rectfill(cam_x,34,cam_x+m,62,sky.colour)
+ 
+ if m>=128 then
  -- double-size "level over"
   sspr(68,64,60,8,cam_x+2,36,120,16)
-
- --rectfill(cam_x+33,53,cam_x+93,59,0)
--- print("your score:".. points,33,54,0)
- print("your score:".. points,cam_x+34,54,7)
+  -- each line is a letter
+  --sspr(68,64,8,8,cam_x+2,36+2*cos(t()),16,16)
+  --sspr(76,64,4,8,cam_x+18,36+2*sin(t()),8,16)
+  --sspr(80,64,4,8,cam_x+26,36-2*sin(t()),8,16)
+  --sspr(84,64,4,8,cam_x+34,36+2*sin(t()),8,16)
+  --sspr(88,64,10,8,cam_x+42,36-2*sin(t()),16,16)
+  --sspr(98,64,4,8,cam_x+58,36+2*sin(t()),8,16)
+  
+ -- sspr(76,64,4,8,cam_x+18,36-2*sin(t()),16,16)
+ -- sspr(84,64,8,8,cam_x+34,36+2*cos(t()),16,16)
+ -- sspr(92,64,8,8,cam_x+50,36-2*sin(t()),16,16)
  
+  print("your score:".. points,cam_x+34,54,1)
+ end
 -- rectfill(cam_x+46,108,cam_x+81,121,1)
 -- rect(cam_x+46,108,cam_x+81,121,12)
  
@@ -1597,42 +1557,54 @@ end
 
 function draw_gameover()
  pal()
- rect(cam_x,33,cam_x+128,63,7)
- rect(cam_x,32,cam_x+128,64,7)
- rectfill(cam_x,34,cam_x+127,62,1)
- sspr(0,80,40,8,cam_x+25,36,84,16)
+ 
+ --  rectfill(cam_x,31,cam_x+m,65,10)
+ --  rectfill((cam_x+128)-m,32,cam_x+128,64,1)
+ m+=10
+  circfill(cam_x+64,64,m,9)
+ -- fillp(0b1000111011101000)
+  circfill(cam_x+64,64,-48+m,4)
+  circfill(cam_x+64,64,-72+m,2)
+  circfill(cam_x+64,64,-96+m,1)
+
+ -- blue fill
+-- rectfill(cam_x,34,cam_x+m,62,sky.colour)
+ 
+ if m>=200 then
+  --rectfill(cam_x-m,1,cam_x+m,62+m,1)
+  rectfill(0,0,cam_x+128,cam_x+128,1)
+
+  sspr(0,80,40,8,cam_x+25,36,84,16)
  
  -- score bg
 -- rectfill(cam_x+33,53,cam_x+93,59,0)
  print("your score: ".. points,cam_x+32,56,7)
  
--- rectfill(cam_x+20,108,cam_x+107,121,1)
--- rect(cam_x+20,108,cam_x+107,121,12)
+ rectfill(cam_x+20,108+1.5*sin(t()),cam_x+112,121+1.5*sin(t()),1)
+ rect(cam_x+20,108+1.5*sin(t()),cam_x+112,121+1.5*sin(t()),12)
  
--- print("press   to try again!",cam_x+23,112,7)
+ print("press ❎ to try again!",cam_x+23,112+1.5*sin(t()),7)
 -- spr(145,cam_x+45,111)
+ end
 end
 
 function draw_youwin()
  pal()
  
- -- full-width stripe
- 
- rect(cam_x,33,cam_x+128,63,7)
- rect(cam_x,32,cam_x+128,64,7)
- rectfill(cam_x,34,cam_x+127,62,4)
- 
+ m+=10
+  circfill(cam_x+64,64,m,1)
+  circ(cam_x+64,64,m,2)
+  circfill(cam_x+64,64,-16+m,4)
+  circ(cam_x+64,64,-32+m,9)
+  circfill(cam_x+64,64,-48+m,15)
+
+ if m>=200 then
  -- double-size "you win"
-  sspr(0,88,60,8,cam_x+32,36,120,16)
+  sspr(0,88,32,8,cam_x+32,36,64,16)
 
- print("you win the game!",cam_x+32,56,7)
- print("score: "..points,cam_x+44,68,7)
- 
- -- "press to restart" box
--- rectfill(cam_x+20,108,cam_x+100,121,1)
--- rect(cam_x+20,108,cam_x+100,121,12)
--- print("press ❎ to restart",cam_x+23,112,7)
-
+  print("you win the game!",cam_x+32,56,7)
+  print("score: "..points,cam_x+44,68,7)
+ end
 end
 -->8
 -- enemies
@@ -2247,7 +2219,7 @@ __sfx__
 01100000045301202214032085600000009532000000b532045300050000500085300050009530005000b530045300050000500085300050009530005000b530045301202214032000000b532000000b53200000
 01100000205520050021522235420050200502285320050200502005020050200502005020050200502005022053200502235422153220522005021c5421c5120050000500005000050000500005000050000500
 011000000c1433f21512313141152461512313141150c1431231300000246000c1433f2150c1433f2150c1430c1433f21512313141152461512313141150c1431231300000141000c1433f2153f4153f2150c143
-0110000000200002001b222002021c2221e212002000020223224232150020200200002000020200202002020020200202232220020221222202121e212182021c2221c2221c2021721017215182001721017215
+0110000000100001001b112001021c1121e112001000010223112231122311500100001000010200102001020010200102231120010221112201121e112181021c1121c1121c1021711017115181001711017115
 010a0000101310c141111512d16100101001000010000100001003010000100001000010000100001000010000100001000010033100001000010000100001000010000100001000010000100001000010000100
 010600001c52720547235272850728507285071a5071950719507175071650715507155071250712507115071150710507105070f507115070f5071050710507115071250712507135071350713507115070e507
 01100000106132a100001002710000100001002510027100001002a1000010022100001002f100001002f100000002f500000002f500245002f500005002f500000002f500000002f500005042f500005002f500
@@ -2284,7 +2256,7 @@ __music__
 01 53511113
 00 57551011
 00 585c1113
-00 595c1311
+00 595c1112
 02 5a5c1012
 02 5b5b435b
 01 415e1f5f

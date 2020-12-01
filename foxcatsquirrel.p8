@@ -8,10 +8,10 @@ __lua__
 
 function _init()
 
- level=0 -- def 0, playground 5
+ level=4 -- def 0, playground 5
  count=0
  points=0
- addfood=1 -- 7 for instant enemy on l1
+ addfood=10 -- 7 for instant enemy on l1
  is_shockwave=false
  
  init_times()
@@ -52,7 +52,7 @@ function _init()
 
  -- effects settings
  explode_size = 1
- explode_amount = flr(rnd(10))+4
+ explode_amount = flr(rnd(6))+10
  explode_colours = {9} 
  
  shockwave_size = 5
@@ -682,8 +682,18 @@ function draw_ui()
  rect((cam_x),119,(127+(cam_x)),127,7)
  
  if glidetime>=10 then
-  print("glide bonus!",player.x-4,player.y-7,0)
-  print("glide bonus!",player.x-4,player.y-8,7)
+ 	rectfill(player.x+4,player.y-9,player.x+36,player.y-1,1)
+ 	rectfill(player.x+5,player.y-10,player.x+38,player.y-2,7)
+  rect(player.x+5,player.y-10,player.x+38,player.y-2,0) 
+ 
+ --speech bubble to mouth
+ line(player.x+8,player.y+2,player.x+9,player.y-2,0)
+ line(player.x+8,player.y+2,player.x+12,player.y-2,0)
+
+ --fill for bubble arrow
+  line(player.x+9,player.y-2,player.x+11,player.y-2,7)
+  pset(player.x+10,player.y-1,7)
+  print("weeeeee!",player.x+7,player.y-8,0)
  end
 end	
 
@@ -921,7 +931,7 @@ function collide_food()
 end
 
 function add_foodpoints()
- points+=100+10*flr(glidetime)
+ points+=100+(20*level)+10*flr(glidetime)
  -- points+=flr(10000/timeleft)
  timeleft+=timegain
  count+=addfood
@@ -1058,13 +1068,11 @@ end
 -->8
 -- levels
 
-
 function draw_levels()
  
  -- sunny hills
  if level==0 then
- -- splash.sp=92
-  sky.colour=12 -- light blue
+   sky.colour=12 -- light blue
  
   -- sea
   rectfill(0,70,70,127,2)
@@ -1078,7 +1086,6 @@ function draw_levels()
   -- hills
   -- cake
    circfill(99,134,80,15) -- far hill
- -- green circfill(99,134,80,15) -- far hill
   circ(99,134,80,7) -- far outline
 
  -- cake  
@@ -1091,7 +1098,8 @@ function draw_levels()
  -- green circfill(30,174,90,3) -- near hill
   circ(30,174,90,5) -- left outline
   
-  circfill(80,16,8,10) -- sun
+  -- sun
+  circfill(80,15,8,10)
   
   draw_clouds()
   -- dancing flower
@@ -1292,14 +1300,15 @@ function draw_menu()
 	map(0,0,0,0)
 
 	-- speech bubble
+ rectfill(player.x+4,player.y-8,player.x+86,player.y-1,0)
 	rectfill(player.x+5,player.y-10,player.x+88,player.y-2,7)
  rect(player.x+5,player.y-10,player.x+88,player.y-2,0) 
 
  --pset for rounded corners
- pset(player.x+5,player.y-10,sky.colour)
- pset(player.x+88,player.y-2,sky.colour)
- pset(player.x+5,player.y-2,sky.colour)
- pset(player.x+88,player.y-10,sky.colour)
+ pset(player.x+5,player.y-10,12)
+ pset(player.x+88,player.y-2,12)
+ pset(player.x+4,player.y-1,12)
+ pset(player.x+88,player.y-10,12)
  
  --speech bubble to mouth
  line(player.x+8,player.y+2,player.x+9,player.y-2,0)
@@ -1398,13 +1407,14 @@ function draw_tutorial()
  
  spr(player.sp,player.x,player.y)
  
+ rectfill(player.x+4,player.y-8,player.x+86,player.y-1,0)
  rectfill(player.x+5,player.y-10,player.x+88,player.y-2,7)
  rect(player.x+5,player.y-10,player.x+88,player.y-2,0) 
 
  --pset for rounded corners
  pset(player.x+5,player.y-10,12)
  pset(player.x+88,player.y-2,12)
- pset(player.x+5,player.y-2,12)
+ pset(player.x+4,player.y-1,12)
  pset(player.x+88,player.y-10,12)
  
  --speech bubble to mouth
@@ -1417,59 +1427,62 @@ function draw_tutorial()
 
  print("how to play my game!",player.x+8,player.y-8,0)
 
- rectfill(17,42,107,95,0)
- rectfill(19,40,109,92,2)
- rect(19,40,109,92,4)
- 
- -- 16,48 works 
- -- shadow
- print("get 10 food:",25,49,1)
- print("get 10 food:",26,48,7) 
- -- text
-
- spr(26,74,47)
- spr(27,82,47)
- spr(28,90,47)
- spr(29,98,47)
-
- -- shadow
- print("grab key: ",25,57,1)
- -- text
- print("grab key: ",26,56,7)
- spr(14,64,54)
+ -- instructions box
+ rectfill(17,46,107,95,0)
+ rectfill(19,44,109,92,2)
+ rect(19,44,109,93,4)
  
  -- shadow
- print("avoid enemies: ",25,65,0)
+ print("get 10 food:",25,51,0)
+ print("get 10 food:",26,50,9) 
  -- text
- print("avoid enemies: ",26,64,7)
- spr(12,82,62)
- spr(10,92,62)
+
+ spr(26,74,48)
+ spr(27,82,48)
+ spr(28,90,48)
+ spr(29,98,48)
 
  -- shadow
- print("press ❎ to jump",25,73,0) 
+ print("grab key: ",25,59,0)
+ -- text
+ print("grab key: ",26,58,10)
+ spr(14,64,57)
+ 
+ -- shadow
+ print("avoid enemies: ",25,67,0)
+ -- text
+ print("avoid enemies: ",26,66,15)
+ spr(12,84,64)
+ spr(10,96,64,1,1,true)
+
+ -- shadow
+ print("press    to jump",25,75,0) 
+ print("❎",49,75,4)
+ print("❎",50,74,9)
   -- text
- print("press ❎ to jump",26,72,7)
+ print("press    to jump",26,74,6)
 
  -- shadow
- print("hold ❎ to glide",25,81,0)
+ print("❎",45,83,4)
+ print("❎",46,82,9)
+ print("hold    to glide",25,83,0)
  -- text
- print("hold ❎ to glide",26,80,7)
+ print("hold    to glide",26,82,7)
 -- print("(c)",50,72,12)
 -- print("(c)",46,80,12)
 
  -- ready? bg box
 
  rectfill(17,102,107,122,0)
- rectfill(19,100,109,120,1)
- rect(19,100,109,120,12)
+ rectfill(19,100,109,120,2)
+ rect(19,100,109,120,9)
   
- print("ready?",52,105,2)
- print("ready?",53,104,7)
- print("❎",55,113,2)
+ print("ready?",52,105,1)
+ print("ready?",53,104,9)
+ print("❎",55,113,4)
  print("❎",56,112,9)
  print("press    to play!",31,113,1)
  print("press    to play!",32,112,7)
--- print("❎",56,114,1)
 end
 
 function update_menu()
@@ -1552,9 +1565,9 @@ function draw_gameover()
   circfill(cam_x+64,64,-30+m/3,0)
   
  if m>=280 then
- 
-  rectfill(cam_x,42,cam_x+128,48,13)
-  rectfill(cam_x,49,cam_x+128,52,5)
+  
+  rectfill(cam_x,34,cam_x+128,49,13)
+  rectfill(cam_x,46,cam_x+128,53,5)
   sspr(0,80,44,8,cam_x+20,36,88,16)
 
   -- with drop shadows!
@@ -1577,18 +1590,32 @@ function draw_youwin()
   circfill(cam_x+64,64,-30+m/2,12)
 
  if m>=280 then
-  rectfill(cam_x,44,cam_x+128,48,9)
-  rectfill(cam_x,49,cam_x+128,51,4)
- 
+--  rectfill(cam_x,44,cam_x+128,48,10)
+--  rectfill(cam_x,49,cam_x+128,51,9)
+
+ circfill(cam_x+64,52,50,8) 
+ circfill(cam_x+64,52,46,9) 
+ circfill(cam_x+64,52,44,10) 
+ circfill(cam_x+64,52,42,11) 
+ circfill(cam_x+64,52,40,3) 
+ circfill(cam_x+64,52,38,12) 
+ circfill(cam_x+64,52,36,14) 
+ circfill(cam_x+64,52,34,2)
+ circfill(cam_x+64,52,32,12)
+
+ rectfill(cam_x,34,cam_x+128,49,10)
+ rectfill(cam_x,46,cam_x+128,53,9)
+
+ rectfill(cam_x,54,cam_x+128,128,12)
  -- double-size "you win"
  sspr(0,88,32,8,cam_x+32,36,64,16)
 
  -- text
- print("score: "..points,cam_x+44,57,1)
- print("score: "..points,cam_x+44,56,7)
- print("press ❎ to watch credits",cam_x+16,105,0)
+ print("score: "..points,cam_x+43,58,1)
+ print("score: "..points,cam_x+44,57,7)
+ print("press ❎ to watch credits",cam_x+15,105,0)
  print("press ❎ to watch credits",cam_x+16,104,7)
- print("❎",cam_x+40,105,4)
+ print("❎",cam_x+39,105,4)
  print("❎",cam_x+40,104,9)
  
  end
@@ -1606,20 +1633,21 @@ function update_ending()
 end
 
 function update_credits()
- level=5
  m+=0.6 --0.6 feels ok
 
  --player_update()
  player_animate()
  if btn(❎) then
  --  _init()
-  m+=3
+  m+=5
  end
 end
 
 function draw_credits()
  cls()
- rectfill(cam_x,0,cam_x+128,128,1)
+
+ print("cam_x:"..cam_x,cam_x,0,7)
+ rectfill(0,0,128,128,1)
 
  rectfill(cam_x+0,136-m,cam_x+127,140-m,9)
  rectfill(cam_x+0,141-m,cam_x+127,143-m,4)
@@ -1653,8 +1681,6 @@ function draw_credits()
 
  print("feedback welcome!",cam_x+12,304-m,4)
  print("@foxcatsquirrel",cam_x+45,312-m,12)
--- print("followers!",cam_x+44,272-m,9)
-
  
  if m>=360 then
 
@@ -1682,16 +1708,19 @@ function draw_credits()
   
   -- cake 
   circfill(cam_x+30,174,90,4) -- near hill
- -- green circfill(30,174,90,3) -- near hill
   circ(cam_x+30,174,90,5) -- left outline
 
-  spr(7,cam_x+24,64)
+  --fcs sprite
+  spr(7,cam_x+23,65)
+ 
+  --	shadow
+  rectfill(cam_x+9,52,cam_x+119,60,0)
  	-- speech bubble to mouth
-	
-  line(cam_x+31,58,cam_x+31,65,0)
+	 line(cam_x+30,58,cam_x+30,66,0)
+	 line(cam_x+31,58,cam_x+31,65,0)
   line(cam_x+31,65,cam_x+38,58,0)
   rect(cam_x+10,51,cam_x+120,59,0)
-  
+    
   -- speech bubble white fill
   line(cam_x+32,63,cam_x+32,58,7)
   line(cam_x+33,62,cam_x+33,58,7)
@@ -1699,6 +1728,7 @@ function draw_credits()
   line(cam_x+35,60,cam_x+35,58,7)
   pset(cam_x+36,59,7)
   
+
   rectfill(cam_x+11,52,cam_x+119,58,7)
   
  --fill for bubble arrow
@@ -1707,7 +1737,9 @@ function draw_credits()
 
   print("thanks for playing my game!",cam_x+12,53,0)
  -- rectfill(cam_x,128,cam_x+128,96,0)
-
+  
+  
+ -- cinematic black bars
  rectfill(cam_x,0,cam_x+128,32,0) 
  rectfill(cam_x,96,cam_x+128,128,0) 
 
@@ -2314,13 +2346,13 @@ __map__
 4849494a00000000000000004849494a000024250000000026000000000000000000000000000000000000000000404142000044005176767676500044000040c7c800000000d70000d700000000c6c7c74849494a00000000000000004849494a00000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000002436250000000000240000000000000000000000000000404142570000000000000000000000005640000000000000d70000d7000000000000d70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000000000000000000000000c90000000000000000000000000000000000000000000000000000000000000000004041420057000000000000000000005600400000000000c6e80000e7c80000000000d7000000000000000000000000c900000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000404142765000000000000000000000517640000000000000d70035d7000000000000d700000000000000000000000000000000000000000000000000000000000000002b0000000000002b00000000002b00
+00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000404142765000000000000000000000517640000000000000d70000d7000000000000d700000000000000000000000000000000000000000000000000000000000000002b0000000000002b00000000002b00
 00000000000000000000000000000000242323250000000000000000000000000000000000000000000000c20000404142000000000000000000000000000040c7c7c8000000d70000d7000000000000d70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000404142670000000000000000000000006740000000000000d70000d700000000c6c7c70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004041425038384500000000000045380051400000000000c6e80000e7c80000000000d700000000000000000000000000000000000000000000000000000000000000000000002b0000000000002b00000000
 4849494a00000000000000004849494a00000000000024363625000000000024404142000000000000000000404141414200003800000000000000003800004000000000000000000000000000000000d74849494a00000000000000004849494a00000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000404142000000000000000000404141414200003800000000000000003800004000000000000000000000000000000000d70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-d40000000000000000000000000000d400290000540000003c3b000000003c0040414235540000000000543540414141420000370054000000005400370000403500000000000035350000000000003541d40000000000000000000000000000d400000000000000000000000000000000000000000000000000000000000000
+d40000000000000000000000000000d400290000540000003c3b000000003c0040414235540000000000543540414141420054370054000000005400375400403500000000000000000000000000003541d40000000000000000000000000000d400000000000000000000000000000000000000000000000000000000000000
 d0d1d1d1d1d1d1d1d1d1d1d1d1d1d1d2101210121210101210121212101210124041414141420000004041414141414141414141414141414141414141414141c6c7c80000c6c7c7c7c7c80000c6c7c842d0d1d1d1d1d1d1d1d1d1d1d1d1d1d1d261616161616161616161616161616127272727272727272727272727272727
 d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d313131313131313131313131313131313000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000403333333333333333333333333333330000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

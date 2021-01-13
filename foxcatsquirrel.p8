@@ -390,6 +390,7 @@ end
 -->8
 -- player
 
+
 function player_update()
 
  -- sand = flag 2
@@ -498,13 +499,13 @@ function player_update()
  
  if player.holding
  then
-  player.boost+=.5
+  player.boost=2
   player.sp=48
  end
  
  if player.boost>=player.maxboost
   then 
-   player.boost=0--player.maxboost
+   player.boost=player.maxboost
    --player.holding=false
  end
   
@@ -550,7 +551,7 @@ function player_update()
  and not collide_map(player,"down",7)
  and btn(⬇️)
  then player.jumping=false
-      player.y+=7
+     player.y+=7
   if player.y>110 then player.y=110
  end
  end
@@ -582,6 +583,9 @@ function player_update()
  elseif player.dy<0 
  and not player.gliding then
    player.jumping=true
+ -- return here! jan 2021
+
+   player.y-=player.boost
    glidetime=0
    if collide_map(player,"up", 1) then
      player.dy=0
@@ -720,7 +724,7 @@ end
 
 function draw_ui()
 
- --test_ui()
+ test_ui()
   
  -- smaller time background
  rectfill(1+(cam_x),119,79+(cam_x),126,0)
@@ -880,6 +884,7 @@ function level_gimmicks()
     player.landed=true
     player.falling=false
     player.gliding=false
+    player.waslanded=0
   end
  
  -- moving platform: ⬅️+➡️  

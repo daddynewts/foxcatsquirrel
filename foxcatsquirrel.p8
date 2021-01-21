@@ -11,15 +11,13 @@ function _init()
  level=0  -- def 0, playground 5
  count=0
  points=0
- addfood=1 -- 7 for instant enemy on l1
+ addfood=10 -- 7 for instant enemy on l1
  lives=3
  
  cartdata("foxcatsquirrel")
   
- high_score_table.load_scores()
- 
  init_times()
-
+ 
  skullangle=0
  skullapproach=0
  ghostangle=0
@@ -398,18 +396,8 @@ end
 
 function player_update()
 
- -- sand = flag 2
- if collide_map(player,"down",2) then
-   friction=0.5
-   player.boost=2
-   
- -- ice = flag 3
- elseif collide_map(player,"down",3) then
-   friction=1
-  -- player.max_dx=4
-   
  -- spring = flag 4
- elseif collide_map(player,"down",4) then
+ if collide_map(player,"down",4) then
    player.dy=-6 -- default 5.2
    player.dx*=player.max_dx
    player.jumping=true
@@ -860,11 +848,6 @@ function level_gimmicks()
  leveltime+=0.01
  shockwave_cooldown-=1
  
- --if level==1 then
- -- vplatform.x=226
--- else vplatform.x=vplatform.x
- --end
- 
  -- moving platform: ⬆️+⬇️
  vplatform.y+=1.4*cos(leveltime)--2*cos(t())
    
@@ -1014,7 +997,7 @@ end
  
 function make_bonus()
 
- if count==10 and level<=1 then
+ if count==10 then
   for i=1,1 do    
    bonus={
     sprite=14,
@@ -1022,28 +1005,6 @@ function make_bonus()
     y=20,
    }
   add(bonuses,bonus)
-  end
- end
- 
- if count==10 and level==2 then
-  for i=1,1 do    
-   bonus={
-    sprite=14,
-    x=54+(cam_x),
-    y=rnd(flr(20))+20,
-   }
-  add(bonuses,bonus)
-  end
- end
- 
- if count==10 and level>=3 then
-  for i=1,1 do    
-   bonus={
-    sprite=14,
-    x=60+(cam_x),
-    y=rnd(flr(20))+10,
-   }
-   add(bonuses,bonus)
   end
  end
 end
@@ -2204,199 +2165,6 @@ function shockwave(x,y,r,c_table,num)
   else
   end
 end
--->8
--- high scores
-
-function _update60()
-    if (not score_entry.entering) then
-        if (btnp(left)) high_score_table.add_current_score(-100)
-        if (btn(right)) high_score_table.add_current_score(100)
-        if (btnp(up)) high_score_table.check_current_score(high_score_table.current_score)
-    end
-
-    high_score_table.update()
-end
-
-function _draw()
-    cls()
-
-    high_score_table.draw()
-
-    local debug_string = "score: "..high_score_table.get_score_text(high_score_table.current_score)
-    ? debug_string, 64-#debug_string*2, 114, 8
-end
-
--->8
--- high score code
-high_score_table = { magic_number = 42, pad_digits = 8, base_address=0, a=0, current_score = 0 }
-high_score_table.characters = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", " " }
-score_entry = { entering = false, entry_number=1, entry_character=1, cycle_colours={10,9,8,14}, current_colour=1, cycle_count=0 }
-
-high_score_table.scores = {}
-
-function high_score_table.update()
-    if (score_entry.entering) then
-        score_entry.cycle_count += 1
-
-        if (score_entry.cycle_count > 5) then
-            score_entry.cycle_count = 0
-            score_entry.current_colour += 1
-            if (score_entry.current_colour > #score_entry.cycle_colours) score_entry.current_colour=1
-        end
-
-        if (btnp(up)) then
-            score_entry.characters[score_entry.entry_character] += 1
-            if (score_entry.characters[score_entry.entry_character] > #high_score_table.characters) score_entry.characters[score_entry.entry_character] = 1
-        end
-
-        if (btnp(down)) then
-            score_entry.characters[score_entry.entry_character] -= 1
-            if (score_entry.characters[score_entry.entry_character] < 1) score_entry.characters[score_entry.entry_character] = #high_score_table.characters
-        end
-
-        if (btnp(right)) score_entry.entry_character = min(3, score_entry.entry_character+1)
-        if (btnp(left)) score_entry.entry_character = max(1, score_entry.entry_character-1)
-
-        if (btnp(fire2)) then
-            high_score_table.scores[score_entry.entry_number].name = high_score_table.array_to_string(score_entry.characters)
-            score_entry.entering = false
-            high_score_table.save_scores()
-        end
-    end
-    high_score_table.a += 0.0157
-end
-
-function high_score_table.draw()
-    local title_text = "high scores"
-    ? title_text, 64-#title_text*2, 10, 8
-
-    for i=0, #high_score_table.scores-1 do
-        local score = high_score_table.scores[i+1]
-        local score_name = score.name
-        local score_c = 8
-
-        if (score_entry.entering and score_entry.entry_number == i+1) then
-            score_name = high_score_table.array_to_string(score_entry.characters)
-            score_c = score_entry.cycle_colours[score_entry.current_colour]
-        end
-
-        local score_text = score_name.."...."..high_score_table.get_score_text(score.score)
-        local score_x = 64-#score_text*2
-        if (not score_entry.entering) score_x += sin(high_score_table.a+i/10)*5
-         
-        ? score_text, score_x, 8*i+20, score_c
-
-        if (score_entry.entering and score_entry.entry_number == i+1) then
-            local start_x = score_x+(score_entry.entry_character-1)*4
-            line (start_x, 8*i+26, start_x+2, 8*i+26,score_c)
-        end
-    end
-end
-
--- adding scores using bit shifting to allow for higher values
--- taken from this thread https://www.lexaloffle.com/bbs/?tid=3577
-function high_score_table.add_current_score(addition)
-    high_score_table.current_score += shr(addition, 16)
-end
-
-function high_score_table.check_current_score()
-    for i=1,10 do
-        if (high_score_table.current_score > high_score_table.scores[i].score) then
-            for j=10,i+1,-1 do
-                high_score_table.scores[j] = high_score_table.scores[j-1]
-            end
-            score_entry.entering = true
-            score_entry.entry_number = i
-            score_entry.entry_character = 1
-            score_entry.characters = {1,1,1}
-            high_score_table.scores[i] = {name="aaa", score=high_score_table.current_score}
-            return true
-        end
-    end
-    return false
-end
-
-function high_score_table.load_scores()
-    local value = dget(high_score_table.base_address)
-
-    if (value != high_score_table.magic_number) then
-        for i=1,10 do
-            high_score_table.scores[i] = { name = "aaa", score = shr((11000-i*1000),16)}
-        end
-        return false
-    end
-
-    local current_address = high_score_table.base_address + 1
-    high_score_table.scores = { }
-    for i=1,10 do
-        local digits = ""
-        score = dget(current_address)
-        digits = digits..high_score_table.int_to_char(dget(current_address+1))
-        digits = digits..high_score_table.int_to_char(dget(current_address+2))
-        digits = digits..high_score_table.int_to_char(dget(current_address+3))
-        high_score_table.scores[i] = { name=digits, score=score }
-        current_address += 4
-    end
-   
-    return true
-end
-
-function high_score_table.save_scores()
-    dset(high_score_table.base_address, high_score_table.magic_number)
-
-    local current_address = high_score_table.base_address + 1
-    for i=1,10 do
-        dset(current_address, high_score_table.scores[i].score)
-
-        dset(current_address+1, high_score_table.char_to_int(sub(high_score_table.scores[i].name,1,1)))
-        dset(current_address+2, high_score_table.char_to_int(sub(high_score_table.scores[i].name,2,2)))
-        dset(current_address+3, high_score_table.char_to_int(sub(high_score_table.scores[i].name,3,3)))
-
-        current_address += 4
-    end
-end
-
-function high_score_table.get_score_text(score_value)
-    if (score_value == nil) return "0"
-
-    local s = ""
-    local v = abs(score_value)
-    repeat
-      s = shl(v % 0x0.000a, 16)..s
-      v /= 10
-    until (v==0)
-
-    for p=1,high_score_table.pad_digits-#s do
-        s = "0"..s
-    end
-
-    if (score_value<0)  s = "-"..s
-    return s 
-end
-
-function high_score_table.char_to_int(char)
-    for k,v in pairs(high_score_table.characters) do
-        if (v == char) return k
-    end
-
-    return -1
-end
-
-function high_score_table.int_to_char(int)
-    for k,v in pairs(high_score_table.characters) do
-        if (k == int) return v
-    end
-
-    return ""
-end
-
-function high_score_table.array_to_string(array)
-    local string = ""
-    for i=1,#array do
-        string = string..high_score_table.int_to_char(array[i])
-    end
-    return string
-end
 __gfx__
 00000000079004007090040007900400709004000790040070900400009004007090040000000000000000000000000000111100000000000000000000000000
 00000000049999004099990004999900049999004099990040999900009999004099990070900400000777000007770001333310000000000110000000000000
@@ -2414,14 +2182,14 @@ bbbbbbbb44444444bbbbbbbb44444445011111100122222000000000720200001c3baf2109a90000
 4444442244444444224944224484444401111110012222200000000074f99f071f89ab31000000a001f4ff1018877ff10019100000001710009ff000b00b00b0
 444449444444444444444444444454440111111001222220000000000991719012fabdc100000000001ff1001ffff110001410000000017100000000000b0000
 444444444444494444444444444449440111111001222220000000000049990001111110000000000001100001111000000100000000001000000000000b0000
-001100100001010010000000111111110011111111111110000003b07999799999a9997900000000000000003000000009000000040000000000000000000000
-01791141001719114100000099999999019999999999f941000003b09999999799999999000000b00000000003bbb0009a900000494000000400000000000000
-014999910014199991000000449449441944494449449f9100003b0099a99999799f999f00000b0b000000000b3b3b0009000000040000000000000000000000
-141919110001491911000000444444441444444444449f9100003b00999999a9999999990b00b00b000000000bb3bb0000000000000000000000000000000000
-121f99f100019f99f9100000444444441444444444449f91000003b09a999994994499a9b0b0b000000ddd000b3b3bb000000000000000000000000000000000
-019917191017491711710000414441441441441441449f91000003b04999994444444999b00b000000d667d000bbb3b000000a00000009000000040000000000
-172999917101299991100000441444140144144144144941000003b04499444444444449000b00000d67666d0000bbb00000a7a000009a900000424000000000
-01191191100019119100000011111111001111111111111000003b004444444444444444000b00000555555d000000b000000a00000009000000040000000000
+001100100001010010000000111111110011111111111110000003b00000000099a9997900000000000000003000000009000000040000000000000000000000
+01791141001719114100000099999999019999999999f941000003b00000000099999999000000b00000000003bbb0009a900000494000000400000000000000
+014999910014199991000000449449441944494449449f9100003b0000000000799f999f00000b0b000000000b3b3b0009000000040000000000000000000000
+141919110001491911000000444444441444444444449f9100003b0000000000999999990b00b00b000000000bb3bb0000000000000000000000000000000000
+121f99f100019f99f9100000444444441444444444449f91000003b000000000994499a9b0b0b000000ddd000b3b3bb000000000000000000000000000000000
+019917191017491711710000414441441441441441449f91000003b00000000044444999b00b000000d667d000bbb3b000000a00000009000000040000000000
+172999917101299991100000441444140144144144144941000003b00000000044444449000b00000d67666d0000bbb00000a7a000009a900000424000000000
+01191191100019119100000011111111001111111111111000003b000000000044444444000b00000555555d000000b000000a00000009000000040000000000
 00000000000018118100000000000000000000000000000011113b110000000000000000000000000000000300a0a00000000000001871000000000000000000
 0790040000000100100000000000000028888888000000009993b999000000000000000000000000000bbb3000aaa00000000000018887100111111111111110
 049999000000000000000000000000002888888800000000493b494400000000000000000000000000b3b3b00aa9aa0000000000018888100658888888888560

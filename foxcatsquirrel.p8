@@ -8,16 +8,16 @@ __lua__
 
 function _init()
 
- level=4  -- def 0, playground 5
+ level=0  -- def 0, playground 5
  count=0
  points=0
- addfood=10 -- 7 for instant enemy on l1
+ addfood=1 -- 7 for instant enemy on l1
  lives=3
  
  init_times()
  
- skullangle=0
- skullapproach=0
+ duckangle=0
+ duckapproach=0
  ghostangle=0
  ghostapproach=0
  
@@ -27,7 +27,7 @@ function _init()
  death_sfx = 1
  jump_sfx = 0
  slide_sfx = 2
- skull_sfx = 12
+ duck_sfx = 12
  bonus_sfx = 13
  endlevel_sfx = 63
  spring_sfx = 4
@@ -139,8 +139,8 @@ function _init()
   ghost={ ghost_sp=10, x=100, flp=false}
  }
  
- skulls={ 
-  skull={ x=70, flp=false }
+ ducks={ 
+  duck={ x=70, flp=false }
  }
   
  foods={}
@@ -174,7 +174,7 @@ function init_enemies()
 	del(balloons,balloon)
  del(foods,food)
  del(ghosts,ghost)
- del(skulls,skull)
+ del(ducks,duck)
  del(bonuses,bonus)
 end
 
@@ -221,7 +221,7 @@ function init_menu()
  timeleft=127
 	del(foods,food)
  del(balloons,balloon)
- del(skulls,skull)
+ del(ducks,duck)
  del(ghosts,ghost)
   _update = update_mainmenu
   _draw = draw_menu
@@ -663,7 +663,7 @@ function draw_game()
  draw_bonus()
  draw_ui()
  draw_ghost()
- draw_skull()
+ draw_duck()
  draw_balloon()
 end
 
@@ -917,7 +917,7 @@ function collide_bonus()
      del(foods,food)
      del(bonuses,bonus)
      del(ghosts,ghost)
-     del(skulls,skull)
+     del(ducks,duck)
      sfx(endlevel_sfx,0)
      init_levelover()
   end
@@ -1662,39 +1662,39 @@ end
 function make_enemies()
 
  if count==7 and level==0 then
-  make_skull()
+  make_duck()
  elseif count==5 and level==1 then
-  make_skull()
+  make_duck()
  elseif count==4 and level==2 then
   make_ghost()
  elseif count==2 and level==3 then
   make_ghost()
  elseif count==1 and level==4 then
   make_ghost()
-  make_skull()
+  make_duck()
  end
 end
 
 function draw_enemies()
- draw_skull()
+ draw_duck()
  draw_ghost()
 end
 
 function move_enemies()
- move_skull()
+ move_duck()
  move_ghost()
 end
 
-function make_skull()
+function make_duck()
  
  for i=1,1 do
-  skull={
+  duck={
     x=cam_x+52,
     y=-10-player.y,
    }
-  add(skulls,skull)
-  sfx(skull_sfx,0)
-  skullchase=true
+  add(ducks,duck)
+  sfx(duck_sfx,0)
+  duckchase=true
  end
 end
 
@@ -1710,12 +1710,12 @@ function make_ghost()
  end
 end
 
-function move_skull() 
+function move_duck() 
 
- if skullchase==true then
-  for skull in all(skulls) do
-   skull.x-=((skull.x/100)-(player.x/100))*(player.dx/count+1)
-   skull.y-=((skull.y/100)-(player.y/100))*(player.dy/count+1)
+ if duckchase==true then
+  for duck in all(ducks) do
+   duck.x-=((duck.x/100)-(player.x/100))*(player.dx/count+1)
+   duck.y-=((duck.y/100)-(player.y/100))*(player.dy/count+1)
   end
  end
 end
@@ -1744,12 +1744,12 @@ end
 
 function collision_enemies()
 
- for skull in all(skulls) do
+ for duck in all(ducks) do
  
-  if  skull.y > player.y-4
-  and skull.y < player.y+4
-  and skull.x > player.x-4
-  and skull.x < player.x+4 then
+  if  duck.y > player.y-4
+  and duck.y < player.y+4
+  and duck.x > player.x-4
+  and duck.x < player.x+4 then
       livescheck()  
   end
  end
@@ -1765,26 +1765,26 @@ function collision_enemies()
  end
  
  if is_shockwave==true then
-  skullapproach=cos(shockwave_x,skulls.skull.y)
-  skullangle+=(3.141592654/skullapproach)/180
+  duckapproach=cos(shockwave_x,ducks.duck.y)
+  duckangle+=(3.141592654/duckapproach)/180
   
- for skull in all(skulls) do
+ for duck in all(ducks) do
  
-  if  skull.y > shockwave_y-20
-  and skull.y < shockwave_y+20
-  and skull.x > shockwave_x-20
-  and skull.x < shockwave_x+20
+  if  duck.y > shockwave_y-20
+  and duck.y < shockwave_y+20
+  and duck.x > shockwave_x-20
+  and duck.x < shockwave_x+20
    then
-    skullchase=false
+    duckchase=false
    end
   end
  end
   if is_shockwave==false then
-   skullchase=true
+   duckchase=true
  end
-  if skullchase==false then
-   skull.x-=cos(skullangle)-(0.25+(skull.x-shockwave_x)/(20+count))
-   skull.y-=sin(skullangle)-(0.25+(skull.y-shockwave_y)/(20+count))
+  if duckchase==false then
+   duck.x-=cos(duckangle)-(0.25+(duck.x-shockwave_x)/(20+count))
+   duck.y-=sin(duckangle)-(0.25+(duck.y-shockwave_y)/(20+count))
  end
  
  if is_shockwave==true then
@@ -1808,24 +1808,20 @@ function collision_enemies()
   if ghostchase==false then
    ghost.x-=cos(ghostangle)-(0.25+(ghost.x-shockwave_x)/(20+count))
    ghost.y-=sin(ghostangle)-((ghost.y-shockwave_y)/(20+count))
-
---   ghost.x-=((ghost.x-shockwave_x)/(20+count)/2)-cos(2*ghostangle)
---   ghost.y-=sin(2*ghostangle)-((ghost.y-shockwave_y)/(10+count))/2
-  end
- 
-end
-
-function draw_skull()
-
- for skull in all(skulls) do
-  spr(12,skull.x,skull.y,1,1,skull.flp)
-  
-  if player.x>=skull.x then
-   skull.flp=true
-  else
-   skull.flp=false
  end
 end
+
+function draw_duck()
+
+ for duck in all(ducks) do
+  spr(12,duck.x,duck.y,1,1,duck.flp)
+  
+  if player.x>=duck.x then
+   duck.flp=true
+  else
+   duck.flp=false
+  end
+ end
 end
 
 function draw_ghost()
@@ -1880,6 +1876,7 @@ function update_fx()
   --lifetime
   fx.t+=2.5 -- size of circle
              -- default = 2.5
+ 
   if fx.t>fx.die then del(effects,fx) end
 
   if fx.t/fx.die < 1/#fx.c_table then
@@ -1902,9 +1899,7 @@ function update_fx()
     if fx.grav then fx.dy+=.25 end
     if fx.grow then fx.r+=.8 end
     if fx.shrink then fx.r-=.1 end
-   
-    --fx.c=crumb
-   
+  
    --move
     fx.x+=fx.dx
     fx.y+=fx.dy
@@ -1956,6 +1951,8 @@ function shockwave(x,y,r,c_table,num)
   else
   end
 end
+-->8
+
 __gfx__
 00000000079004007090040007900400709004000790040070900400009004007090040000000000000000000000000000111100000000000000000000000000
 00000000049999004099990004999900049999004099990040999900009999004099990070900400000777000007770001333310000000000110000000000000

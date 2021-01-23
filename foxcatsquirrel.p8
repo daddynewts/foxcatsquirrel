@@ -8,14 +8,12 @@ __lua__
 
 function _init()
 
- level=0  -- def 0, playground 5
+ level=4  -- def 0, playground 5
  count=0
  points=0
  addfood=10 -- 7 for instant enemy on l1
  lives=3
  
- cartdata("foxcatsquirrel")
-  
  init_times()
  
  skullangle=0
@@ -52,8 +50,8 @@ function _init()
  end
  
  function init_player()
-  player.x=(level*128)+8--60
-  player.y=48--20
+  player.x=(level*128)+8 --60
+  player.y=48 --20
   player.dx=0
   player.dy=0
  end
@@ -77,19 +75,11 @@ function _init()
  }
 
  fire={
-  x1=392,
-  x2=496,
-  y=69,
   sp=195,
  }
 
  splash={
   sp=92,
-  x1=48,--304,
-  y1=105,
-  x2=304,
-  y2=110,
-  x3=512,
  }
  
  player={
@@ -136,7 +126,6 @@ function _init()
   sky.y1=128
  
  clouds={}
-  cloud1={x=rnd(flr(20))+20,speed=0.2}
   cloud2={x=rnd(flr(10))+60,speed=0.4}--{x=-12}
   cloud3={x=rnd(flr(10))+90,speed=0.5}
 
@@ -191,6 +180,7 @@ end
 
 function init_times()
  airtime=0
+ timecolour=3
  m=0
  glidetime=0
  leveltime=1
@@ -219,31 +209,6 @@ function init_platforms()
   lsprite=36,
   rsprite=37,
  } 
-  
-end
- 
-function test_mode()
--- edit test parameters here
--- not in the main body!
--- sfx(-2)
---music(-1) -- music off
-end
-
-function test_ui()
- print("was landed: "..player.waslanded,cam_x+1,1,7)
- print("boost: "..player.boost,cam_x+1,9,7)
- print("holdtime: "..player.holdtime,cam_x+1,17,7)
- 
- --food hitbox
--- if #skulls>=1 then
---   print("flip: "..skull_flp,0,0,1)
- --  print("skull.x: "..flr(skull.x),0,0,1)
- --  print("skull.y: "..flr(skull.y),0,8,1)
---  end
- --if is_shockwave==true then
- -- rect(shockwave_x-20,shockwave_y-20,shockwave_x+20,shockwave_y+20,7)
- --end
- --rect(food.x-20,food.y-20,food.x+24,food.y+24,7)
 end
 -->8
 -- update and game loop
@@ -290,14 +255,13 @@ function init_gameover()
 end
 
 function update_game()
-  test_mode()
-  update_fx()
-  player_update()
-  level_gimmicks()
-  player_animate()
-  collide_food()
-  collision_enemies()
-  move_enemies()
+ update_fx()
+ player_update()
+ level_gimmicks()
+ player_animate()
+ collide_food()
+ collision_enemies()
+ move_enemies()
   if #bonuses>=1 then
    collide_bonus()
    move_bonus()
@@ -348,7 +312,7 @@ function collide_map(obj,aim,flag)
  
  -- default is local
   x=obj.x y=obj.y
-  w=obj.w  h=obj.h
+  w=obj.w h=obj.h
  
  --default is all zeroes
  -- removed "local"
@@ -393,7 +357,6 @@ end
 -->8
 -- player
 
-
 function player_update()
 
  -- spring = flag 4
@@ -410,14 +373,13 @@ function player_update()
  -- vent = flag 6 
  elseif collide_map(player,"down",6)
  and player.gliding then
-  player.dy-=1
+  player.dy-=4 --1
   sfx(slide_sfx,0)
  --  player.jumping=true
  elseif collide_map(player,"down",6) 
   and not player.gliding then
   player.dy-=0.6
   sfx(slide_sfx,0)
-
  end
 
  -- physics
@@ -444,55 +406,58 @@ function player_update()
   and player.landed
   and not player.falling
   and not player.gliding
-  and not player.jumping then
-   player.running=false
-   friction=0.3
-   player.sliding=true
- else friction=0.95
+  and not player.jumping
+   then
+    player.running=false
+    friction=0.3
+    player.sliding=true
+ else
+    friction=0.95
  end
  
  -- slide turn to left
  if player.running
   and player.dx>=0
   and player.landed
-  and btn(⬅️) then
-   player.running=false
-   player.sliding=true
-   sfx(slide_sfx,0)
+  and btn(⬅️)
+   then
+    player.running=false
+    player.sliding=true
+    sfx(slide_sfx,0)
  end
  
   -- slide turn to right
  if player.running
   and player.dx<=0
   and player.landed
-  and btn(➡️) then
-   player.running=false
-   player.sliding=true
-   sfx(slide_sfx,0)
+  and btn(➡️)
+   then
+    player.running=false
+    player.sliding=true
+    sfx(slide_sfx,0)
   end
  
  if player.sliding
   and not btn(⬅️)
   and not btn(➡️)
- then friction=0.7 
-  end
+   then friction=0.7 
+ end
   
  --jump
  if btn(❎)
   and not player.gliding
   and not player.falling
   and not btn(⬇️)
---  and player.dy>=-2
- then
-  player.holding=true
- else
-  player.holding=false
-  player.boost=0
+   then
+    player.holding=true
+   else
+    player.holding=false
+    player.boost=0
  end
  
  if player.holding
- then
-  player.boost+=0.5 --1
+  then
+   player.boost+=0.5 --1
  end
  
  if player.boost>=1 
@@ -504,7 +469,7 @@ function player_update()
  end
  
  if player.boost>=1
-  and player.waslanded>=-1
+  and player.waslanded>=-0.5
    then
     sfx(jump_sfx,0)
  end
@@ -519,15 +484,15 @@ function player_update()
  -- gliding
  if btn(❎)
  and player.falling
- then player.gliding=true
-      player.falling=false
-      player.jumping=false
-      player.dy/=1.3
-      glidetime+=0.2
-      player.boost=0
+  then
+    player.gliding=true
+    player.dy/=1.3
+    glidetime+=0.2
+    player.boost=0
  else if player.falling
-  then player.gliding=false
-      glidetime=0
+  then
+    player.gliding=false
+    glidetime=0
  end 
  
   -- shockwave 
@@ -538,11 +503,11 @@ function player_update()
 
  -- drop-through
  if collide_map(player,"down",0)
- and player.landed
- and not collide_map(player,"down",4)
- and not collide_map(player,"down",7)
- and btn(⬇️)
- then player.jumping=false
+  and player.landed
+  and not collide_map(player,"down",4)
+  and not collide_map(player,"down",7)
+  and btn(⬇️)
+   then player.jumping=false
      player.y+=7
   if player.y>110 then player.y=110
  end
@@ -575,11 +540,8 @@ function player_update()
  elseif player.dy<0 
  and not player.gliding then
    player.jumping=true
- -- return here! jan 2021
-
---   player.y-=player.boost
    glidetime=0
-   if collide_map(player,"up", 1) then
+ if collide_map(player,"up", 1) then
      player.dy=0
      
    ------ test ------
@@ -679,13 +641,6 @@ end
 function limit_speed(num,maximum)
   return mid(-maximum,num,maximum)
 end
-
-function make_shockwave()
- 
- 
- if #skulls==0 then
- end	
-end
 -->8
 	-- draws
 
@@ -702,8 +657,6 @@ function draw_game()
   17,17)   -- 17 because the camera may not be exactly on a map square
  draw_platforms() 
  spr(player.sp,player.x,player.y,1,1,player.flp)
--- sspr(0,16,9,10,player.x,player.y)
- --draw_waterfall()
  draw_splashes()
  draw_food()
  draw_fx()
@@ -716,77 +669,51 @@ end
 
 function draw_ui()
 
- test_ui()
-  
- -- smaller time background
- rectfill(1+(cam_x),119,79+(cam_x),126,0)
- 
  if timeleft>=40 then 
-   rectfill(2+(cam_x),121,timeleft+(cam_x),125,3)
+  timecolour=3
+ else if timeleft<=18 then
+  timecolour=8
+ else
+  timecolour=9
  end
- 
- if timeleft<=40 then 
-   rectfill(2+(cam_x),121,timeleft+(cam_x),125,9)
  end
- 
- if timeleft<=15 then 
-   rectfill(2+(cam_x),121,timeleft+(cam_x),125,8)
- end
+   
+ -- black bg
+ rectfill(1+cam_x,119,127+cam_x,127,0)
 
+ -- time box
+ rectfill(2+(cam_x),121,timeleft+(cam_x),125,timecolour)
+ 
  print("time",2+(cam_x),121,7)
  
+ -- dividing line
  line((cam_x)+79,119,(cam_x)+79,126,7)
  
-  -- score bg (lower right)
- rectfill((cam_x+80),119,127+(cam_x),127,0)
+ -- score bg (lower right)
  print("score:"..flr(points),(cam_x+81),121,7)
  
-  -- white outline
+ -- ui - white outline
  rect((cam_x),119,(127+(cam_x)),127,7)
- 
- if glidetime>=10 then
- 	rectfill(player.x+4,player.y-9,player.x+36,player.y-1,1)
- 	rectfill(player.x+5,player.y-10,player.x+38,player.y-2,7)
-  rect(player.x+5,player.y-10,player.x+38,player.y-2,0) 
- 
- --speech bubble to mouth
- line(player.x+8,player.y+2,player.x+9,player.y-2,0)
- line(player.x+8,player.y+2,player.x+12,player.y-2,0)
-
- --fill for bubble arrow
-  line(player.x+9,player.y-2,player.x+11,player.y-2,7)
-  pset(player.x+10,player.y-1,7)
-  print("weeeeee!",player.x+7,player.y-8,0)
- end
-end	
+  
+end
 
 function draw_clouds()
- cloud1.x+=cloud1.speed
 	cloud2.x+=cloud2.speed
 	cloud3.x+=cloud3.speed
 	
- -- cloud 1 - each line a line
- circfill(cloud1.x+4,4,2,7)
---line(cloud1.x+2,4,cloud1.x+4,4,7) 
- line(cloud1.x,5,cloud1.x+7,5,7)
-	line(cloud1.x-2,6,cloud1.x+7,6,7)
-	
 	--cloud 2
 	circfill(cloud2.x+2,16,2,7)
-	line(cloud2.x,16,cloud2.x+4,16,7)
-	line(cloud2.x,17,cloud2.x+6,17,7)
-	line(cloud2.x-1,18,cloud2.x+7,18,7)
+	 line(cloud2.x,16,cloud2.x+4,16,7)
+	 line(cloud2.x,17,cloud2.x+6,17,7)
+	 line(cloud2.x-1,18,cloud2.x+7,18,7)
 
  -- cloud 3
  circfill(cloud3.x,24,2,7)
  circfill(cloud3.x+5,23,2,7)
- line(cloud3.x-3,25,cloud3.x+9,25,7)
- line(cloud3.x-5,26,cloud3.x+11,26,7)
-
-	 if cloud1.x>=cam_x+128 then
-	  cloud1.x=cam_x-8
-	  cloud1.y=rnd(flr(20))
-  elseif cloud2.x>cam_x+168 then
+  line(cloud3.x-3,25,cloud3.x+9,25,7)
+  line(cloud3.x-5,26,cloud3.x+11,26,7)
+ 
+ if cloud2.x>cam_x+168 then
    cloud2.x=cam_x-(rnd(flr(20)))
    cloud2.y=rnd(flr(20))
   elseif cloud3.x>cam_x+200 then
@@ -795,45 +722,25 @@ function draw_clouds()
  end
  
  -- boat
- ship.x+=cloud1.speed
+ ship.x+=0.15
  if ship.x>=70 then
-  ship.x=-10
+  ship.x=-100
  end
-
- -- sparkles
- 
 end
-
+ 
 function draw_splashes()
- -- level 1
- --spr(splash.sp,splash.x1,splash.y1)
- --spr(splash.sp,splash.x1+8,splash.y1)
- --spr(splash.sp,splash.x1+16,splash.y1)  
- --spr(splash.sp,splash.x1+24,splash.y1)  
 
  -- level 3
- rectfill(splash.x2,splash.y2+4,splash.x2+24,splash.y2+24,1)
- spr(splash.sp,splash.x2,splash.y2)
- spr(splash.sp,splash.x2+8,splash.y2)
- spr(splash.sp,splash.x2+16,splash.y2)
+ rectfill(304,114,328,134,1)
+ spr(splash.sp,304,110)
+ spr(splash.sp,312,110)
+ spr(splash.sp,320,110)
 
  -- level 5
--- spr(splash.sp,splash.x3,splash.y2)
--- spr(splash.sp,splash.x3+8,splash.y2)
--- spr(splash.sp,splash.x3+16,splash.y2)
- spr(splash.sp,splash.x3+24,splash.y2)
- spr(splash.sp,splash.x3+32,splash.y2)
--- spr(splash.sp,splash.x3+40,splash.y2)
--- spr(splash.sp,splash.x3+48,splash.y2)
--- spr(splash.sp,splash.x3+56,splash.y2)
--- spr(splash.sp,splash.x3+64,splash.y2)
--- spr(splash.sp,splash.x3+72,splash.y2)
--- spr(splash.sp,splash.x3+80,splash.y2)
- spr(splash.sp,splash.x3+88,splash.y2)
- spr(splash.sp,splash.x3+96,splash.y2)
--- spr(splash.sp,splash.x3+104,splash.y2)
--- spr(splash.sp,splash.x3+112,splash.y2)
--- spr(splash.sp,splash.x3+120,splash.y2)
+ spr(splash.sp,536,110)
+ spr(splash.sp,544,110)
+ spr(splash.sp,600,110)
+ spr(splash.sp,608,110)
      
  splash.sp+=0.5
    if splash.sp==96 then
@@ -871,7 +778,6 @@ function level_gimmicks()
  
  -- moving platform: ⬅️+➡️  
  hplatform.x+=2*sin(leveltime)
--- hplatform.y+=2*cos(leveltime)
   
  if  hplatform.y > player.y -- -4
   and hplatform.y < player.y+10 -- +4
@@ -928,18 +834,7 @@ function level_food()
  end
  end
  
- if level==2 then
-  for i=1,1 do    
-   food={
-    sprite=flr(rnd(food_count)+food_start),
-    x=level*128+flr(rnd(90)+16),
-    y=flr(rnd(50)+25),
-   }
-  add(foods,food)
-  end
- end
-  
- if level==3 then
+ if level>=2 and level<=3 then
   for i=1,1 do    
    food={
     sprite=flr(rnd(food_count)+food_start),
@@ -964,9 +859,7 @@ function level_food()
 end
 
 function draw_food()
- --for food in all(foods) do
   spr(food.sprite,food.x,food.y)
- --end
 end
 
 
@@ -1002,7 +895,7 @@ function make_bonus()
    bonus={
     sprite=14,
     x=60+(cam_x),
-    y=20,
+    y=22,
    }
   add(bonuses,bonus)
   end
@@ -1020,13 +913,13 @@ function collide_bonus()
    and bonus.y < player.y+8
    and bonus.x+4 > player.x
    and bonus.x+4 < player.x+8 then
-      points+=100
-      del(foods,food)
-      del(bonuses,bonus)
-      del(ghosts,ghost)
-      del(skulls,skull)
-      sfx(endlevel_sfx,0)
-      init_levelover()
+     points+=100
+     del(foods,food)
+     del(bonuses,bonus)
+     del(ghosts,ghost)
+     del(skulls,skull)
+     sfx(endlevel_sfx,0)
+     init_levelover()
   end
  end
 end
@@ -1037,7 +930,7 @@ function draw_bonus()
   circfill(bonus.x+3,bonus.y+3,7+2*(sin(leveltime)),10)
   circfill(bonus.x+3,bonus.y+3,4,7)
   spr(bonus.sprite,bonus.x,bonus.y)
-   spr(twinkle.sp,bonus.x+sin(leveltime),bonus.y)
+  spr(twinkle.sp,bonus.x+sin(leveltime),bonus.y)
  end
  
   twinkle.sp+=0.5
@@ -1049,7 +942,7 @@ end
 
 function make_balloon()
 
- if count==flr(rnd(10))+10
+ if count==flr(rnd(20))+10
  then
 --flr(rnd(10)+5) then
   for i=1,1 do    
@@ -1070,27 +963,29 @@ function collide_balloon()
    and balloon.y < player.y+8
    and balloon.x+4 > player.x
    and balloon.x+4 < player.x+8 then
-      points+=1000
-      lives+=1
-      del(balloons,balloon)
-      sfx(balloon_sfx[1],0)
-      sfx(balloon_sfx[2],1)
-      explode(balloon.x,balloon.y,explode_size,explode_colours,explode_amount)
-      crumb=pget(balloon.x,balloon.y)
-      print("1-up!!",player.x,player.y,7)
+     points+=1000
+     lives+=1
+     del(balloons,balloon)
+     sfx(balloon_sfx[1],0)
+     sfx(balloon_sfx[2],1)
+     explode(balloon.x,balloon.y,explode_size,explode_colours,explode_amount)
+     crumb=pget(balloon.x,balloon.y)
    end
  end
 end
 
 function draw_balloon()
  for balloon in all(balloons) do
- -- spr(balloon_sp,balloon.x,balloon.y)
- circfill(balloon.x,balloon.y,3,8)
- circ(balloon.x,balloon.y,3,1)
+  circfill(balloon.x,balloon.y,3,8)
+  circ(balloon.x,balloon.y,3,1)
+ 
  -- highlight
  line(balloon.x+1,balloon.y-2,balloon.x+2,balloon.y,7)
+ 
  -- low light
-  line(balloon.x-1,balloon.y+3,balloon.x-2,balloon.y,2)
+ line(balloon.x-1,balloon.y+3,balloon.x-2,balloon.y,2)
+ 
+ -- string
  line(balloon.x,balloon.y+4,balloon.x-(sin(leveltime)),balloon.y+8,7)
  end
 end
@@ -1120,29 +1015,23 @@ function draw_levels()
   spr(193,10,64)
   spr(ship.sp,ship.x,ship.y)
   
-  -- hills
-  -- cake
-   circfill(99,134,80,15) -- far hill
-  circ(99,134,80,7) -- far outline
+  -- hills --
+  -- far hill
+  circfill(99,134,80,15)
+  circ(99,134,80,7) -- outline
 
- -- cake  
-  circfill(126,154,80,14) -- mid hill
- -- green circfill(126,154,80,11) -- mid hill
-  circ(126,154,80,8) -- right outline
+  -- mid hill
+  circfill(126,154,80,14)
+  circ(126,154,80,8) -- outline
   
-  -- cake 
-  circfill(30,174,90,4) -- near hill
- -- green circfill(30,174,90,3) -- near hill
-  circ(30,174,90,5) -- left outline
+  -- near hill
+  circfill(30,174,90,4)
+  circ(30,174,90,5) -- outline
   
   -- sun
   circfill(80,15,8,10)
   
   draw_clouds()
-  -- dancing flower
-  --spr(30,96,104+flr(sin(leveltime)))
-  -- top of base platform
-  --line(0,112,128,112,1)
   end
  
  -- jungle
@@ -1169,14 +1058,11 @@ function draw_levels()
    rectfill(252,0,262,128,2)
     
    -- knots + whorls
---  circ(146,60,3,0)
    circfill(146,60,2,1)
- --  circ(186,30,3,0)
    circfill(186,30,2,1)
    circfill(238,50,2,1)
-   --oval(186,30,3,0)
-   
-      -- outlines
+
+   -- tree canopy shadows
    circfill(138,-10,37,1)
    circfill(168,-18,33,1)
    circfill(210,-20,33,1)
@@ -1194,15 +1080,7 @@ function draw_levels()
  if level==2 then
   
    sky.colour=0 -- black
-   --pal(6,5) -- pale -> dark grey
-   --pal(9,4) -- orange -> brown
-   --pal(8,2) -- red -> maroon
-   --pal(7,13) -- white -> blue-grey
-   --pal(11,3) -- pale -> dark green
-   --pal(15,4) -- peach -> brown
-   --pal(10,2) -- yellow -> maroon
-   --pal(12,1) -- pale -> dark blue
-   --pal(14,2) -- pink -> maroon
+ 
   -- dark clouds
   circfill(266,-10,42-sin(2*leveltime),1)
   circfill(296,-18,38+sin(2*leveltime),1)
@@ -1228,15 +1106,16 @@ function draw_levels()
  if level==3 then
   pal()
   sky.colour=5
+  
   -- door
-  circ(cam_x+64,64,14,13)
-  circfill(cam_x+64,60,14,13)
-  circfill(cam_x+64,64,13,0)
+  circ(448,64,14,13)
+  circfill(448,60,14,13)
+  circfill(448,64,13,0)
 
-  rectfill(cam_x+50,64,cam_x+78,127,0)
-  rect(cam_x+50,64,cam_x+78,127,13)
+  rectfill(434,64,462,127,0)
+  rect(434,64,462,127,13)
 
-  line(cam_x+51,64,cam_x+77,64,0)
+  line(435,64,461,64,0)
   
   -- draught
   draught.x+=cos(leveltime)/8
@@ -1264,45 +1143,42 @@ function draw_levels()
  if fire.sp>=198 then
   fire.sp=195
  end
-  spr(fire.sp,fire.x1,fire.y)
-  spr(fire.sp,fire.x2,fire.y)
+  spr(fire.sp,392,69)
+  spr(fire.sp,496,69)
  
  -- final level - volcano
  if level==4 then
   pal()
   sky.colour=2
---  circfill(576,100,108,1)
---  circ(576,100,108,2)
---  circfill(576,10,20,0)
---  circ(576,10,20,9)
   
   -- dark grey clouds
-  circfill(cam_x+6,-24-sin(t()),48,5)
-  circfill(cam_x+36,-28+sin(t()),44,5)
-  circfill(cam_x+68,-30+sin(t()),46,5)
-  circfill(cam_x+116,-24+sin(t()),48,5)
+  circfill(518,-24-sin(t()),48,5)
+  circfill(548,-28+sin(t()),44,5)
+  circfill(578,-30+sin(t()),46,5)
+  circfill(628,-24+sin(t()),48,5)
 
     -- dark red clouds
-  circfill(cam_x+6,-26-sin(t()),46,2)
-  circfill(cam_x+36,-28+sin(t()),40,2)
-  circfill(cam_x+68,-30-sin(t()),44,2)
-  circfill(cam_x+116,-26+sin(t()),46,2)
+  circfill(518,-26-sin(t()),46,2)
+  circfill(548,-28+sin(t()),40,2)
+  circfill(578,-30-sin(t()),44,2)
+  circfill(628,-26+sin(t()),46,2)
 
   -- red clouds
-  circfill(cam_x+6,-26-sin(t()),42,8)
-  circfill(cam_x+36,-28+sin(t()),36,8)
-  circfill(cam_x+68,-30-sin(t()),40,8)
-  circfill(cam_x+116,-26+sin(t()),42,8)
+  circfill(518,-26-sin(t()),42,8)
+  circfill(548,-28+sin(t()),36,8)
+  circfill(578,-30-sin(t()),40,8)
+  circfill(628,-26+sin(t()),42,8)
  
   -- light grey clouds
-  circfill(cam_x+6,-18-sin(t()),30,9)
-  circfill(cam_x+36,-26+sin(t()),30,9)
-  circfill(cam_x+68,-24-sin(t()),30,9)
-  circfill(cam_x+116,-20+sin(t()),30,9)
+  circfill(518,-18-sin(t()),30,9)
+  circfill(548,-26+sin(t()),30,9)
+  circfill(578,-24-sin(t()),30,9)
+  circfill(628,-20+sin(t()),30,9)
  
   -- fire bg
   rectfill(512,113,640,128,2)
   line(512,118,640,118,8)
+  
   -- pass-through bg
   rectfill(560,16,596,86,1)
  
@@ -1337,25 +1213,19 @@ function draw_menu()
 	map(0,0,0,0)
 
 	-- speech bubble
- rectfill(player.x+4,player.y-8,player.x+86,player.y-1,0)
-	rectfill(player.x+5,player.y-10,player.x+88,player.y-2,7)
- rect(player.x+5,player.y-10,player.x+88,player.y-2,0) 
+ rectfill(20,16,102,23,0)
+	rectfill(21,14,104,22,7)
+ rect(21,14,104,22,0) 
 
- --pset for rounded corners
- pset(player.x+5,player.y-10,12)
- pset(player.x+88,player.y-2,12)
- pset(player.x+4,player.y-1,12)
- pset(player.x+88,player.y-10,12)
- 
  --speech bubble to mouth
- line(player.x+8,player.y+2,player.x+9,player.y-2,0)
- line(player.x+8,player.y+2,player.x+12,player.y-2,0)
+ line(24,26,25,22,0)
+ line(24,26,28,22,0)
 
  --fill for bubble arrow
- line(player.x+9,player.y-2,player.x+11,player.y-2,7)
- pset(player.x+10,player.y-1,7)
+ line(25,22,27,22,7)
+ pset(26,23,7)
 
- print("welcome to my game!",player.x+10,player.y-8,0)
+ print("welcome to my game!",26,16,0)
 
  -- title box
  rectfill(0,44,127,48,9)
@@ -1366,30 +1236,6 @@ function draw_menu()
  spr(144,83,35) -- acorn
  rectfill(13,52,114,53,1)
     
- -- control bg box
- --rectfill(25,55,103,71,1)
- --rect(25,55,103,71,9)
- 
- -- control rivets
- --pset(27,57,10)
- --pset(27,69,10)
- --pset(101,57,10)
- --pset(101,69,10)
- 
--- print("start",30,61,7)
- -- print("press    to start",29,61,7)
- -- print("c",57,61,12)
- --circ(58,63,5,12)
- 
- -- c sprite
--- spr(112,54,59)
- 
--- print("help", 69,61,7)
- --spr(113,91,59)
- ---print("press    for info",29,74,7)
- --print("a",57,74,11)
- -- circ(58,76,5,11)
- 
  -- feedback bg box
  rectfill(17,102,107,122,0)
  rectfill(19,100,109,120,1)
@@ -1444,25 +1290,19 @@ function draw_tutorial()
  
  spr(player.sp,player.x,player.y)
  
- rectfill(player.x+4,player.y-8,player.x+86,player.y-1,0)
- rectfill(player.x+5,player.y-10,player.x+88,player.y-2,7)
- rect(player.x+5,player.y-10,player.x+88,player.y-2,0) 
+ rectfill(20,16,102,23,0)
+ rectfill(21,14,104,22,7)
+ rect(21,14,104,22,0) 
 
- --pset for rounded corners
- pset(player.x+5,player.y-10,12)
- pset(player.x+88,player.y-2,12)
- pset(player.x+4,player.y-1,12)
- pset(player.x+88,player.y-10,12)
- 
  --speech bubble to mouth
- line(player.x+8,player.y+2,player.x+9,player.y-2,0)
- line(player.x+8,player.y+2,player.x+12,player.y-2,0)
+ line(24,26,25,22,0)
+ line(24,26,28,22,0)
 
  --fill for bubble arrow
- line(player.x+9,player.y-2,player.x+11,player.y-2,7)
- pset(player.x+10,player.y-1,7)
+ line(25,22,27,22,7)
+ pset(26,23,7)
 
- print("how to play my game!",player.x+8,player.y-8,0)
+ print("how to play my game!",24,16,0)
 
  -- instructions box
  rectfill(17,46,107,95,0)
@@ -1472,8 +1312,8 @@ function draw_tutorial()
  -- shadow
  print("get 10 food:",25,51,0)
  print("get 10 food:",26,50,9) 
- -- text
-
+ 
+ -- food sprites
  spr(26,74,48)
  spr(27,82,48)
  spr(28,90,48)
@@ -1563,6 +1403,7 @@ end
 function draw_dead()
  pal()
  m+=12 
+
   circfill(cam_x+64,64,m-40,1)
   circfill(cam_x+64,64,m-80,2)
   circfill(cam_x+64,64,m-120,4)
@@ -1595,10 +1436,6 @@ function init_levelover()
   level+=1
   m+=12
   init_player()
- -- player.x=(level*128)+63
- -- player.y=16
- -- player.dx=0
- -- player.dy=0
   _update = update_menu
   _draw = draw_levelover
   if level==5 then
@@ -1610,14 +1447,11 @@ end
 function draw_levelover()
  pal()
   m+=12 
-  -- circfill(cam_x+64,64,m,2)
   
   circfill(cam_x+64,64,m-40,4)
   circfill(cam_x+64,64,m-80,9)
   circfill(cam_x+64,64,m-120,7)
   circfill(cam_x+64,64,-30+m/3,12)
- -- blue fill
--- rectfill(cam_x,34,cam_x+m,62,sky.colour)
  
  if m>=280 then
  -- double-size "level over"
@@ -1642,8 +1476,6 @@ end
 function draw_gameover()
  pal()
  
- --  rectfill(cam_x,31,cam_x+m,65,10)
- --  rectfill((cam_x+128)-m,32,cam_x+128,64,1)
  m+=12
   circfill(cam_x+64,64,m-40,9)
   circfill(cam_x+64,64,m-80,4)
@@ -1676,9 +1508,6 @@ function draw_youwin()
   circfill(cam_x+64,64,-30+m/2,12)
 
  if m>=280 then
---  rectfill(cam_x,44,cam_x+128,48,10)
---  rectfill(cam_x,49,cam_x+128,51,9)
-
  --rainbow
  circfill(cam_x+64,52,30-delay/2,8) 
  circfill(cam_x+64,52,29-delay/2,9) 
@@ -1726,7 +1555,7 @@ function update_credits()
  player_animate()
  if btn(❎) then
  --  _init()
-  m+=5
+  m+=2
  end
 end
 
@@ -1735,100 +1564,92 @@ function draw_credits()
 
  rectfill(0,0,128,128,1)
 
- rectfill(cam_x+0,136-m,cam_x+127,140-m,9)
- rectfill(cam_x+0,141-m,cam_x+127,143-m,4)
+ rectfill(512,136-m,639,140-m,9)
+ rectfill(512,141-m,639,143-m,4)
 
  -- title in sprites
- sspr(0,64,56,8,cam_x+13,128-m,112,16)
- spr(144,cam_x+83,127-m) -- acorn
+ sspr(0,64,56,8,525,128-m,112,16)
+ spr(144,595,127-m) -- acorn
 
- print("a game by james newton",cam_x+22,152-m,7)
+ print("a game by james newton",534,152-m,7)
 
- print("starring",cam_x+12,176-m,4)
- print("foxcatsquirrel",cam_x+36,184-m,9) 
- spr(player.sp,cam_x+96,181-m)
+ print("starring",524,176-m,4)
+ print("foxcatsquirrel",548,184-m,9) 
+ spr(1,608,181-m)
  
- print("ghost",cam_x+36,194-m,7)
- spr(10,cam_x+96,191-m) 
+
+print("ghost",548,194-m,7)
+ spr(10,608,191-m) 
   
- print("bad duck",cam_x+36,204-m,3)
- spr(12,cam_x+96,202-m) 
+ print("bad duck",548,204-m,3)
+ spr(12,608,202-m) 
  
- print("food",cam_x+36,214-m,15)
- sspr(80,8,32,8,cam_x+72,212-m)  
+ print("food",548,214-m,15)
+ sspr(80,8,32,8,584,212-m)  
  
- print("special thanks to",cam_x+12,232-m,4)
- print("hannah",cam_x+81,240-m,9)
- print("phil",cam_x+89,248-m,9)
- print("jess",cam_x+89,256-m,9)
- print("vicky",cam_x+85,264-m,9)
- print("nerdyteachers.com",cam_x+37,272-m,9)
- print("and all players!",cam_x+42,280-m,9)
+ print("special thanks to",524,232-m,4)
+ print("hannah",593,240-m,9)
+ print("phil",601,248-m,9)
+ print("jess",601,256-m,9)
+ print("vicky",597,264-m,9)
+ print("nerdyteachers.com",549,272-m,9)
+ print("and all players!",554,280-m,9)
 
- print("feedback welcome!",cam_x+12,304-m,4)
- print("@foxcatsquirrel",cam_x+45,312-m,12)
+ print("feedback welcome!",524,304-m,4)
+ print("@foxcatsquirrel",557,312-m,12)
+
  
  if m>=360 then
 
   sky.colour=12 -- light blue
-  rectfill(cam_x,0,cam_x+128,128,sky.colour)
+  rectfill(512,0,640,128,sky.colour)
   
   -- sea
-  rectfill(cam_x+0,70,cam_x+70,127,2)
-  rect(cam_x+-1,70,cam_x+70,127,1)
+  rectfill(512,70,582,127,2)
+  rect(511,70,582,127,1)
   -- bubbles
-  pset(rnd(flr(50))+cam_x+5,rnd((flr(10)))+70,7)
+  pset(rnd(flr(50))+517,rnd((flr(10)))+70,7)
   --island
-  spr(193,cam_x+10,64)
+  spr(193,522,64)
   
   -- hills
-  -- cake
-  circfill(cam_x+99,134,80,15) -- far hill
- -- green circfill(99,134,80,15) -- far hill
-  circ(cam_x+99,134,80,7) -- far outline
+  -- far
+  circfill(611,134,80,15) -- far hill
+  circ(611,134,80,7) -- far outline
 
- -- cake  
-  circfill(cam_x+126,154,80,14) -- mid hill
--- -- green circfill(126,154,80,11) -- mid hill
-  circ(cam_x+126,154,80,8) -- right outline
+ -- mid hill  
+  circfill(638,154,80,14) -- mid hill
+  circ(638,154,80,8) -- right outline
   
-  -- cake 
-  circfill(cam_x+30,174,90,4) -- near hill
-  circ(cam_x+30,174,90,5) -- left outline
+  -- near hill 
+  circfill(542,174,90,4) -- near hill
+  circ(542,174,90,5) -- left outline
 
   --fcs sprite
-  spr(7,cam_x+23,65)
+  spr(7,535,65)
  
   --	shadow
-  rectfill(cam_x+9,52,cam_x+119,60,0)
+  rectfill(521,52,631,60,0)
  	-- speech bubble to mouth
-	 line(cam_x+30,58,cam_x+30,66,0)
-	 line(cam_x+31,58,cam_x+31,65,0)
-  line(cam_x+31,65,cam_x+38,58,0)
-  rect(cam_x+10,51,cam_x+120,59,0)
+	 line(542,58,542,66,0)
+	 line(543,58,543,65,0)
+  line(543,65,550,58,0)
+  rect(522,51,632,59,0)
     
   -- speech bubble white fill
-  line(cam_x+32,63,cam_x+32,58,7)
-  line(cam_x+33,62,cam_x+33,58,7)
-  line(cam_x+34,61,cam_x+34,58,7)
-  line(cam_x+35,60,cam_x+35,58,7)
-  pset(cam_x+36,59,7)
+  line(544,63,544,58,7)
+  line(545,62,545,58,7)
+  line(546,61,546,58,7)
+  line(547,60,547,58,7)
+  pset(548,59,7)
   
-  rectfill(cam_x+11,52,cam_x+119,58,7)
+  rectfill(523,52,631,58,7)
   
- --fill for bubble arrow
--- line(player.x+9,player.y-2,player.x+11,player.y-2,7)
--- pset(player.x+10,player.y-1,7)
-
-  print("thanks for playing my game!",cam_x+12,53,0)
- -- rectfill(cam_x,128,cam_x+128,96,0)
+  print("thanks for playing my game!",524,53,0)
    
  -- cinematic black bars
- rectfill(cam_x,0,cam_x+128,32,0) 
- rectfill(cam_x,96,cam_x+128,128,0) 
-
--- spr(182,cam_x+18,52+2*cos(t()))
--- spr(183,cam_x+24,52-2*cos(t()))
+ rectfill(512,0,640,32,0) 
+ rectfill(512,96,640,128,0)
 
    if btnp(❎) then
     _init()
@@ -1886,7 +1707,6 @@ function make_ghost()
    }
   add(ghosts,ghost)
   sfx(ghost_sfx,0)
-  ghost.orbit=false
  end
 end
 
@@ -1894,7 +1714,6 @@ function move_skull()
 
  if skullchase==true then
   for skull in all(skulls) do
--- easy
    skull.x-=((skull.x/100)-(player.x/100))*(player.dx/count+1)
    skull.y-=((skull.y/100)-(player.y/100))*(player.dy/count+1)
   end
@@ -1902,53 +1721,25 @@ function move_skull()
 end
 
 function move_ghost()
--- enemyapproach=atan2(food.x+4,ghosts.ghost.y)
--- enemyangle+=(3.141592654/enemyapproach)/180
- 
- --atan2 gives angle of 
- --two points
- 
- --end
-  --if ghost.x<=cam_x
-  -- then ghost.x=cam_x
-  --end
-  
-  -- enemy eats food
+
+ -- enemy eats food
  for ghost in all (ghosts) do          
-  if  food.y > ghost.y-8 -- -4
-  and food.y < ghost.y+8 -- +4
-  and food.x+4 > ghost.x -- 4
+  if  food.y > ghost.y-8 --
+  and food.y < ghost.y+8 --
+  and food.x+4 > ghost.x --
   and food.x+4 < ghost.x+8
     then del(foods,food)
     init_game()
   end
  end
  
-  -- circular movement
-  --for ghost in all (ghosts) do
-  -- if ghost.x > food.x-20
-  -- and ghost.x < food.x+24
-  -- and ghost.y > food.y-20
-  -- and ghost.y < food.y+24
-  --  then ghost.orbit=true
-   -- else ghost.orbit=false
-   --end
-  --end
-  
-  -- circular movement!
+  -- ghost moves towards food
   for ghost in all (ghosts) do
    if ghostchase==true then
     ghost.x-=(ghost.x/100)-(food.x/100)
     ghost.y-=(ghost.y/100)-(food.y/100)
    end
   end
- --  elseif ghost.orbit==true then
---    ghost.x=food.x-(10*cos(enemyangle))
---    ghost.y=food.y-(10*sin(enemyangle))
-  --  ghost.x=food.x-(15*cos(leveltime))
-  --  ghost.y=food.y-(15*sin(leveltime))
-  -- end
-  --end
 end
 
 function collision_enemies()
@@ -2441,7 +2232,7 @@ __map__
 000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004041425038384500000000000045380051400000000000c6e80000e7c80000000000d700000000000000000000000000000000000000000000000000000000000000000000002b0000000000002b00000000
 48494a0000000000000000000048494a00000000000024363625000000000024404142000000000000000000404141414200003800000000000000003800004000000000000000000000000000000000d74849494a00000000000000004849494a00000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000404142000000000000000000404141414200003800000000000000003800004000000000000000000000000000000000d70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-d40000000000000000000000000000d400290000540000003c3b000000003c0040414235540000000000543540414141420054370054000000005400375400403500000000000000000000000000003541d40000000000000000000000000000d400000000000000000000000000000000000000000000000000000000000000
+d40000000000000000000000000000d400290000540000003c3b000000003c0040414235540000000000543540414141420000370054000000005400370000403500000000000000000000000000003541d40000000000000000000000000000d400000000000000000000000000000000000000000000000000000000000000
 d0d1d1d1d1d1d1d1d1d1d1d1d1d1d1d2101210121210101210121212101210124041414141420000004041414141414141414141414141414141414141414141c6c7c80000c6c7c7c7c7c80000c6c7c842d0d1d1d1d1d1d1d1d1d1d1d1d1d1d1d261616161616161616161616161616127272727272727272727272727272727
 d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d313131313131313131313131313131313000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000403333333333333333333333333333330000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000

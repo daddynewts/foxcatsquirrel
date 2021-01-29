@@ -8,6 +8,8 @@ __lua__
 
 function _init()
  cartdata("foxcatsquirrel")
+	high_score_table.load_scores()
+
  _initall()
 end
 
@@ -15,7 +17,7 @@ function _initall()
 
  level=0 -- def 0, playground 5
  count=0
- points=0
+ points=7100
  addfood=10 -- 7 for instant enemy on l1
  lives=3
  
@@ -752,6 +754,34 @@ function draw_splashes()
      splash.sp=92
   end
 end
+
+function print_centre(str,y,c)
+ print(str,cam_x+(63-(#str*2)),y,1)
+ print(str,cam_x+(64-(#str*2)),y-1,c)
+end
+
+function circles(c1,c2,c3,c4)
+ m+=10
+  circfill(cam_x+64,64,m-40,c1)
+  circfill(cam_x+64,64,m-80,c2)
+  circfill(cam_x+64,64,m-120,c3)
+  circfill(cam_x+64,64,m-140,c4)
+end
+
+function speechbubble()
+	-- speech bubble
+ rectfill(20,16,102,23,0)
+	rectfill(21,14,104,22,7)
+ rect(21,14,104,22,0) 
+
+ --speech bubble to mouth
+ line(24,26,25,22,0)
+ line(24,26,28,22,0)
+
+ --fill for bubble arrow
+ line(25,22,27,22,7)
+ pset(26,23,7)
+end
 -->8
 -- gimmicks
 
@@ -1216,20 +1246,7 @@ function draw_menu()
  rectfill(0,0,127,127,12)
 	draw_levels()
 	map(0,0,0,0)
-
-	-- speech bubble
- rectfill(20,16,102,23,0)
-	rectfill(21,14,104,22,7)
- rect(21,14,104,22,0) 
-
- --speech bubble to mouth
- line(24,26,25,22,0)
- line(24,26,28,22,0)
-
- --fill for bubble arrow
- line(25,22,27,22,7)
- pset(26,23,7)
-
+ speechbubble()
  print("welcome to my game!",26,16,0)
 
  -- title box
@@ -1269,8 +1286,11 @@ function update_mainmenu()
   level_music()
  elseif btnp(🅾️) then
   sfx(menu_sfx)
-  _draw = draw_tutorial
-  _update = update_tutorial
+    _update=high_score_table.update()
+    _draw=high_score_table.draw()
+  
+  --_draw = draw_tutorial
+  --_update = update_tutorial
  end
 end
 
@@ -1295,17 +1315,7 @@ function draw_tutorial()
  
  spr(player.sp,player.x,player.y)
  
- rectfill(20,16,102,23,0)
- rectfill(21,14,104,22,7)
- rect(21,14,104,22,0) 
-
- --speech bubble to mouth
- line(24,26,25,22,0)
- line(24,26,28,22,0)
-
- --fill for bubble arrow
- line(25,22,27,22,7)
- pset(26,23,7)
+ speechbubble()
 
  print("how to play my game!",24,16,0)
 
@@ -1378,6 +1388,9 @@ function update_menu()
   init_platforms()
   _update=update_game
   _draw=draw_game
+ elseif delay<60 and btnp(🅾️) then
+  _update=high_score_table.update()
+  _draw=high_score_table.draw()
  end
 end
 
@@ -1385,6 +1398,7 @@ function init_dead()
  music(-1)
  sfx(death_sfx)
  count=0
+ is_shockwave=false
  init_enemies()
 	init_times()
 	init_game()
@@ -1625,22 +1639,11 @@ function draw_credits()
  rectfill(512,96,640,128,0)
 
    if btnp(❎) then
-    _initall()
+    _update=high_score_table.update()
+    _draw=high_score_table.draw()
+    --_initall()
    end
  end 
-end
-
-function print_centre(str,y,c)
- print(str,cam_x+(63-(#str*2)),y,1)
- print(str,cam_x+(64-(#str*2)),y-1,c)
-end
-
-function circles(c1,c2,c3,c4)
- m+=10
-  circfill(cam_x+64,64,m-40,c1)
-  circfill(cam_x+64,64,m-80,c2)
-  circfill(cam_x+64,64,m-120,c3)
-  circfill(cam_x+64,64,m-140,c4)
 end
 -->8
 -- enemies
@@ -1937,6 +1940,188 @@ function shockwave(x,y,r,c_table,num)
   else
   end
 end
+-->8
+-- high score code
+high_score_table = { magic_number = 42, pad_digits = 8, base_address=0, current_score = 0}
+high_score_table.characters = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", " " }
+score_entry = { entering = false, entry_number=1, entry_character=1, cycle_colours={10,9,8,14}, current_colour=1, cycle_count=0 }
+
+high_score_table.scores = {}
+
+function high_score_table.update()
+
+ if (not score_entry.entering) then
+ 	if (btnp(⬅️)) high_score_table.add_current_score(-100)
+   if (btn(➡️)) high_score_table.add_current_score(100)
+	 	if (btnp(⬆️)) sfx(2)--high_score_table.check_current_score(high_score_table.current_score)
+ end
+  
+
+	if (score_entry.entering) then
+		score_entry.cycle_count += 1
+
+		if (score_entry.cycle_count > 5) then
+			score_entry.cycle_count = 0
+			score_entry.current_colour += 1
+			if (score_entry.current_colour > #score_entry.cycle_colours) score_entry.current_colour=1
+		end
+
+		if (btnp(⬆️)) then
+			score_entry.characters[score_entry.entry_character] += 1
+			if (score_entry.characters[score_entry.entry_character] > #high_score_table.characters) score_entry.characters[score_entry.entry_character] = 1
+		end
+
+		if (btnp(⬇️)) then
+			score_entry.characters[score_entry.entry_character] -= 1
+			if (score_entry.characters[score_entry.entry_character] < 1) score_entry.characters[score_entry.entry_character] = #high_score_table.characters
+		end
+
+		if (btnp(➡️)) score_entry.entry_character = min(3, score_entry.entry_character+1)
+		if (btnp(⬅️)) score_entry.entry_character = max(1, score_entry.entry_character-1)
+
+		if (btnp(❎)) then
+			high_score_table.scores[score_entry.entry_number].name = high_score_table.array_to_string(score_entry.characters)
+			score_entry.entering = false
+			high_score_table.save_scores()
+		end
+	end
+end
+
+function high_score_table.draw()
+	cls()
+	
+	local title_text = "top players"
+	? title_text, cam_x+(64-#title_text*2), 10, 8
+
+	local debug_string = "score: "..high_score_table.get_score_text(high_score_table.current_score)
+ ? debug_string, 64-#debug_string*2, 114, 8
+
+	for i=0, #high_score_table.scores-1 do
+		local score = high_score_table.scores[i+1]
+		local score_name = score.name
+		local score_c = 8
+
+		if (score_entry.entering and score_entry.entry_number == i+1) then
+			score_name = high_score_table.array_to_string(score_entry.characters)
+			score_c = score_entry.cycle_colours[score_entry.current_colour]
+		end
+
+		local score_text = score_name.."...."..high_score_table.get_score_text(score.score)
+		local score_x = 64-#score_text*2
+	 
+		? score_text, score_x, 8*i+20, score_c
+
+		if (score_entry.entering and score_entry.entry_number == i+1) then
+			local start_x = score_x+(score_entry.entry_character-1)*4
+			line (start_x, 8*i+26, start_x+2, 8*i+26,score_c)
+		end
+	end
+end
+
+-- adding scores using bit shifting to allow for higher values
+-- taken from this thread https://www.lexaloffle.com/bbs/?tid=3577
+function high_score_table.add_current_score(addition)
+	high_score_table.current_score += shr(addition, 16)
+end
+
+function high_score_table.check_current_score()
+	for i=1,10 do
+		if (high_score_table.current_score > high_score_table.scores[i].score) then
+			for j=10,i+1,-1 do
+				high_score_table.scores[j] = high_score_table.scores[j-1]
+			end
+			score_entry.entering = true
+			score_entry.entry_number = i
+			score_entry.entry_character = 1
+			score_entry.characters = {1,1,1}
+			high_score_table.scores[i] = {name="aaa", score=high_score_table.current_score}
+			return true
+		end
+	end
+	return false
+end
+
+function high_score_table.load_scores()
+	local value = dget(high_score_table.base_address)
+
+	if (value != high_score_table.magic_number) then
+		for i=1,10 do
+			high_score_table.scores[i] = { name = "aaa", score = shr((11000-i*1000),16)}
+		end
+		return false
+	end
+
+	local current_address = high_score_table.base_address + 1
+	high_score_table.scores = { }
+	for i=1,10 do
+		local digits = ""
+		score = dget(current_address)
+		digits = digits..high_score_table.int_to_char(dget(current_address+1))
+		digits = digits..high_score_table.int_to_char(dget(current_address+2))
+		digits = digits..high_score_table.int_to_char(dget(current_address+3))
+		high_score_table.scores[i] = { name=digits, score=score }
+		current_address += 4
+	end
+	
+	return true
+end
+
+function high_score_table.save_scores()
+	dset(high_score_table.base_address, high_score_table.magic_number)
+
+	local current_address = high_score_table.base_address + 1
+	for i=1,10 do
+		dset(current_address, high_score_table.scores[i].score)
+
+		dset(current_address+1, high_score_table.char_to_int(sub(high_score_table.scores[i].name,1,1)))
+		dset(current_address+2, high_score_table.char_to_int(sub(high_score_table.scores[i].name,2,2)))
+		dset(current_address+3, high_score_table.char_to_int(sub(high_score_table.scores[i].name,3,3)))
+
+		current_address += 4
+	end
+end
+
+function high_score_table.get_score_text(points)
+	if (points == nil) return "0"
+
+	local s = ""
+    local v = abs(points)
+    repeat
+      s = shl(v % 0x0.000a, 16)..s
+      v /= 10
+    until (v==0)
+
+	for p=1,high_score_table.pad_digits-#s do
+		s = "0"..s
+	end
+
+    if (points<0)  s = "-"..s
+    return s 
+end
+
+function high_score_table.char_to_int(char)
+	for k,v in pairs(high_score_table.characters) do
+		if (v == char) return k
+	end
+
+	return -1
+end
+
+function high_score_table.int_to_char(int)
+	for k,v in pairs(high_score_table.characters) do
+		if (k == int) return v
+	end
+
+	return ""
+end
+
+function high_score_table.array_to_string(array)
+	local string = ""
+	for i=1,#array do
+		string = string..high_score_table.int_to_char(array[i])
+	end
+	return string
+end
 __gfx__
 00000000079004007090040007900400709004000790040070900400009004007090040000000000000000000000000000111100000000000000000000000000
 00000000049999004099990004999900049999004099990040999900009999004099990070900400000777000007770001333310000000000110000000000000
@@ -2207,10 +2392,10 @@ __map__
 48494a0000000000000000000048494a000000000000000026000000000000000000000000000000000000000000404142000044005176767676500044000040c7c8000000d700000000d7000000c6c7c74849494a00000000000000004849494a00000000000000000000000000000000000000000000000000000000000000
 000000000000000000000000000000000000000000000024362500000000002400000000000000000000000000004041425700000000000000000000000056400000000000d700000000d70000000000d70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000484a000000c90000000000000000000000000000000000000000000000000000000000000000004041420057000000000000000000005600400000000000c6c8000000c6c7c8000000d7000000000000000000000000c900000000000000000000000000000000000000000000000000000000000000000000
-00000000000000000000000000000000242323250000000000000000000000000000000000000000000000000000404142765000000000000000000000517640c7c8000000d700000000d70000000000d700000000000000000000000000000000000000000000000000000000000000002b0000000000002b00000000002b00
-00000000000000000000000000000000000000000000000000000000000000000000000000000000000000c200004041420000000000000000000000000000400000000000d700000000d70000000000d70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000484a0000484a00000000000000000000000000000000000000000000000000000000000000000000004041426700000000000000000000000067400000000000d700000000d7000000c6c7c70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004041425038384500000000000045380051400000000000c6e80000e7c80000000000d700000000000000000000000000000000000000000000000000000000000000000000002b0000000000002b00000000
+0000000000000000000000000000000024232325000000000000000000000000c7c8000000000000000000000000404142765000000000000000000000517640c7c8000000d700000000d70000000000d700000000000000000000000000000000000000000000000000000000000000002b0000000000002b00000000002b00
+0000000000000000000000000000000000000000000000000000000000000000d700000000000000000000c200004041420000000000000000000000000000400000000000d700000000d70000000000d70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000484a0000484a000000000000000000000000000000000000000000d7000000000000000000000000004041426700000000000000000000000067400000000000d700000000d7000000c6c7c70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000d7000000000000000000000000004041425038384500000000000045380051400000000000c6e80000e7c80000000000d700000000000000000000000000000000000000000000000000000000000000000000002b0000000000002b00000000
 48494a0000000000000000000048494a00000000000024363625000000000024404142000000000000000000404141414200003800000000000000003800004000000000000000000000000000000000d74849494a00000000000000004849494a00000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000404142000000000000000000404141414200003800000000000000003800004000000000000000000000000000000000d70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 d40000000000000000000000000000d400290000540000003c3b000000003c0040414235540000000000543540414141420000370054000000005400370000403500000000000000000000000000003541d40000000000000000000000000000d400000000000000000000000000000000000000000000000000000000000000
@@ -2233,7 +2418,7 @@ d40000000000000000000000000000d4000000000000000000000000000000000000000000000000
 d0d1d1d1d1d1d1d1d1d1d1d1d1d1d1d200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __sfx__
-000301000d1341233113331143311533117331193311b3211e32121311263212a3112a315003000e3000030001204132040220400204002040020400204002040020400204002040020400204002040020400204
+010201000d1341233113331143311533117331193311b3211e32121311263212a3112a31500504005040050400504005040050400504000000000000000000000000000000000000000000000000000000000000
 00100000189751797516975159751497513975139751310617900189001890018900169001590014900169001090015900159000c900179000b900159000a900119000a9000b9000b90000900009000090000903
 010600000f61413610166150060200602006020060200602006020060200602006020060200602006020060200602006020060200602006020060200602006020060200602006020060200602006020060200602
 010c00001445314453144531443314423144231441314413146170040000400004000040000400004000040000400004000040000400004000040000400004000040000400004001240000400004000040000400

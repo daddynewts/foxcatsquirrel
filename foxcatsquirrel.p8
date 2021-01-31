@@ -9,16 +9,14 @@ __lua__
 function _init()
  cartdata("foxcatsquirrel")
 	high_score_table.load_scores()
-
  _initall()
 end
 
 function _initall()
 
- level=0 -- def 0, playground 5
+ level=0
  count=0
- points=7100
- addfood=10 -- 7 for instant enemy on l1
+ addfood=10
  lives=3
  
  init_times()
@@ -141,7 +139,7 @@ function _initall()
   ship.y=66
   ship.sp=192
   
- --enemies={
+ --enemies
  ghosts={
   ghost={ ghost_sp=10, x=100, flp=false}
  }
@@ -149,7 +147,7 @@ function _initall()
  ducks={ 
   duck={ x=70, flp=false }
  }
-  
+ 
  foods={}
   food={
   x=5,
@@ -160,7 +158,7 @@ function _initall()
  
   food_start=26
   food_count=4
-  
+    
  twinkle={}
   twinkle.sp=44
   
@@ -217,6 +215,10 @@ function init_platforms()
   rsprite=37,
  } 
 end
+
+function test_ui()
+ print("airtime:"..player.waslanded,8,8,7)
+end
 -->8
 -- update and game loop
 
@@ -252,15 +254,6 @@ function livescheck()
 	end
 end
 
-function init_gameover()
- delay=100
- m=0
- music(-1)
- sfx(gameover_sfx)
- _update = update_gameover
- _draw = draw_gameover
-end
-
 function update_game()
  update_fx()
  player_update()
@@ -290,7 +283,10 @@ function update_gameover()
 	music(-1)
  delay-=1
 	if delay<=50 and	btnp(❎) then
-	 _initall()
+  sfx(menu_sfx)
+   _update=high_score_table.update
+   _draw=high_score_table.draw
+ 	 --_initall()
 	end
 end
 
@@ -451,7 +447,7 @@ function player_update()
  end
   
  --jump
- if btn(❎)
+ if leveltime>1 and btn(❎)
   and not player.gliding
   and not player.falling
   and not btn(⬇️)
@@ -464,19 +460,20 @@ function player_update()
  
  if player.holding
   then
-   player.boost+=0.5 --1
+   player.boost+=1 --1
  end
  
+ -- player is going up here
  if player.boost>=1 
-  and player.waslanded>=-1 --4
+  and player.waslanded>=-0.4 --4
    then
     player.dy-=player.boost
     player.landed=false
-    player.waslanded-=0.5
+    player.waslanded-=0.2
  end
  
  if player.boost>=1
-  and player.waslanded>=-0.5
+  and player.waslanded>=-0.2
    then
     sfx(jump_sfx,0)
  end
@@ -676,6 +673,8 @@ end
 
 function draw_ui()
 
+ test_ui()
+ 
  if timeleft>=40 then 
   timecolour=3
  else if timeleft<=18 then
@@ -697,7 +696,7 @@ function draw_ui()
  line((cam_x)+79,119,(cam_x)+79,126,7)
  
  -- score bg (lower right)
- print("score:"..flr(points),(cam_x+81),121,7)
+ print("score:"..flr(high_score_table.current_score << 16),cam_x+81,121,7)
  
  -- ui - white outline
  rect((cam_x),119,(127+(cam_x)),127,7)
@@ -768,19 +767,21 @@ function circles(c1,c2,c3,c4)
   circfill(cam_x+64,64,m-140,c4)
 end
 
-function speechbubble()
+function speechbubble(str,x1,y1,x2,y2)
 	-- speech bubble
- rectfill(20,16,102,23,0)
-	rectfill(21,14,104,22,7)
- rect(21,14,104,22,0) 
-
+	rectfill(x1,y1,x2,y2,0)
+	rectfill(x1+1,y1-2,x2+2,y2-1,7)
+	rect(x1+1,y1-2,x2+2,y2-1,0)
+	
  --speech bubble to mouth
- line(24,26,25,22,0)
- line(24,26,28,22,0)
+ line(x1+4,y1+10,x1+5,y2-1,0)
+ line(x1+4,y1+10,x1+8,y2-1,0)
 
  --fill for bubble arrow
- line(25,22,27,22,7)
- pset(26,23,7)
+ line(x1+5,y1+6,x1+7,y2-1,7)
+ pset(x1+6,y2,7)
+ 
+ print(str,cam_x+(64-(#str*2)),y1,0) 
 end
 -->8
 -- gimmicks
@@ -914,7 +915,7 @@ function collide_food()
 end
 
 function add_foodpoints()
- points+=100+(20*level)+10*flr(glidetime)
+ high_score_table.current_score+=100+(20*level)+10*flr(glidetime)>>16
  timeleft+=timegain
  count+=addfood
  del(foods,food)
@@ -948,7 +949,7 @@ function collide_bonus()
    and bonus.y < player.y+8
    and bonus.x+4 > player.x
    and bonus.x+4 < player.x+8 then
-     points+=100
+     high_score_table.current_score+=(500 >> 16)
      del(foods,food)
      del(bonuses,bonus)
      del(ghosts,ghost)
@@ -998,7 +999,7 @@ function collide_balloon()
    and balloon.y < player.y+8
    and balloon.x+4 > player.x
    and balloon.x+4 < player.x+8 then
-     points+=1000
+     high_score_table.current_score+=(1000 >> 16)
      lives+=1
      del(balloons,balloon)
      sfx(balloon_sfx[1],0)
@@ -1246,8 +1247,7 @@ function draw_menu()
  rectfill(0,0,127,127,12)
 	draw_levels()
 	map(0,0,0,0)
- speechbubble()
- print("welcome to my game!",26,16,0)
+ speechbubble("welcome to my game!",20,16,102,23)
 
  -- title box
  rectfill(0,44,127,48,9)
@@ -1259,15 +1259,7 @@ function draw_menu()
  rectfill(13,52,114,53,1)
     
  -- feedback bg box
- rectfill(17,102,107,122,0)
- rectfill(19,100,109,120,1)
- rect(19,100,109,120,9)
-  
- -- rivets
- pset(21,102,10)
- pset(107,102,10)
- pset(21,118,10)
- pset(107,118,10)
+ drawbox(17,102,107,122,0,1,9)
   
  print_centre("press 🅾️ for help",105,15)
  print("⌂",31,112,12)
@@ -1279,19 +1271,23 @@ end
 
 function update_mainmenu()
  delay-=2
+ if delay<-300 then
+  delay=200
+  _draw=draw_menu
+ end
  player_animate()
- if btnp(❎) then
+ if delay<-20 and btnp(❎) then
   sfx(menu_sfx)
   init_game()
   level_music()
  elseif btnp(🅾️) then
   sfx(menu_sfx)
-    _update=high_score_table.update()
-    _draw=high_score_table.draw()
-  
-  --_draw = draw_tutorial
-  --_update = update_tutorial
+  _draw = draw_tutorial
+  _update = update_tutorial
+ elseif delay<-100 then
+  _draw=high_score_table.draw
  end
+ 
 end
 
 function update_tutorial()
@@ -1315,18 +1311,13 @@ function draw_tutorial()
  
  spr(player.sp,player.x,player.y)
  
- speechbubble()
-
- print("how to play my game!",24,16,0)
+ speechbubble("how to play my game!",20,16,102,23)
 
  -- instructions box
- rectfill(17,46,107,95,0)
- rectfill(19,44,109,92,2)
- rect(19,44,109,93,4)
+ drawbox(17,46,107,95,0,2,4)
  
  -- shadow
- print("get 10 food:",25,51,0)
- print("get 10 food:",26,50,9) 
+ shadowtext("get 10 food",26,51,9) 
  
  -- food sprites
  spr(26,74,48)
@@ -1334,47 +1325,27 @@ function draw_tutorial()
  spr(28,90,48)
  spr(29,98,48)
 
- -- shadow
- print("grab key: ",25,59,0)
  -- text
- print("grab key: ",26,58,10)
+ shadowtext("grab key",26,59,10)
  spr(14,64,57)
- 
- -- shadow
- print("avoid enemies: ",25,67,0)
+
  -- text
- print("avoid enemies: ",26,66,15)
+ shadowtext("avoid enemies",26,67,15)
  spr(12,84,64)
  spr(10,96,64,1,1,true)
 
- -- shadow
- print("to jump and glide",35,75,0) 
- print("❎",25,75,1)
- print("❎",26,74,9)
-  -- text
- print("to jump and glide",36,74,7)
+ shadowtext("❎",26,75,9)
+ shadowtext("to jump and glide",36,75,7)
 
- -- shadow
- print("🅾️",25,83,1)
- print("🅾️",26,82,12)
- print("for force field",35,83,0)
- -- text
- print("for force field",36,82,14)
+ shadowtext("🅾️",26,83,12)
+ shadowtext("for force field",36,83,14)
 
  -- ready? bg box
-
- rectfill(17,102,107,122,0)
- rectfill(19,100,109,120,2)
- rect(19,100,109,120,9)
-  
- print("ready?",52,105,1)
- print("ready?",53,104,9)
+ drawbox(17,102,107,122,0,1,9)
  
- print("❎",55,113,1)
- print("❎",56,112,9)
+ print_centre("ready?",105,15) 
  
- print("press    to play!",31,113,1)
- print("press    to play!",32,112,7)
+ print_centre("press ❎ to play!",113,12)
 end
 
 function update_menu()
@@ -1388,9 +1359,6 @@ function update_menu()
   init_platforms()
   _update=update_game
   _draw=draw_game
- elseif delay<60 and btnp(🅾️) then
-  _update=high_score_table.update()
-  _draw=high_score_table.draw()
  end
 end
 
@@ -1430,8 +1398,8 @@ function draw_dead()
   sspr(32,88,60,8,cam_x+24,36,120,16)
 
   -- press x to restart
-  print_centre("your score:".. points,60,15) 
-  print_centre("press ❎ to restart",68,15)
+  print_centre("your score:".. (high_score_table.current_score << 16),60,15) 
+  print_centre("press ❎ to continue",68,15)
 
   -- lives left
   spr(1,cam_x+52,92)
@@ -1467,7 +1435,7 @@ function draw_levelover()
   rectfill(cam_x,49,cam_x+128,51,4)
   sspr(68,64,60,8,cam_x+2,36,120,16)
 
-  print_centre("your score:".. points,60,7) 
+  print_centre("your score:".. (high_score_table.current_score << 16),60,7) 
   print_centre("press ❎ to continue",68,7)
  
   spr(1,cam_x+52,92)
@@ -1477,9 +1445,26 @@ function draw_levelover()
  end
 end
 
+function init_gameover()
+ delay=100
+ m=0
+ music(-1)
+ sfx(gameover_sfx)
+ _update = update_gameover
+ _draw = draw_gameover
+end
+
+function update_gameover()
+ delay-=1
+  if delay<50 and btnp(❎) then
+   _update=high_score_table.update
+   _draw=high_score_table.draw
+  end
+end
+
 function draw_gameover()
  pal()
- 
+
  circles(9,4,2,0)
   
  if m>=220 then
@@ -1489,9 +1474,9 @@ function draw_gameover()
   sspr(0,80,44,8,cam_x+20,36,88,16)
 
   -- with drop shadows!
-  print_centre("your score:".. points,60,6)
+  print_centre("your score:"..(high_score_table.current_score << 16),60,6)
 
-  print_centre("press ❎ to try again",105,6)
+  print_centre("press ❎ to try again!",68,6)
  end
 end
 
@@ -1520,8 +1505,7 @@ function draw_youwin()
  sspr(0,88,32,8,544,47,64,16)
 
  -- text
- print_centre("score: "..points,70,15)
- 
+ print_centre("score: "..(high_score_table.current_score << 16),70,15)
  print_centre("press ❎ to watch credits",105,10)
  
  end
@@ -1581,8 +1565,9 @@ function draw_credits()
  print("jess",601,256-m,9)
  print("vicky",597,264-m,9)
  print("nerdyteachers.com",549,272-m,9)
- print("and all players!",554,280-m,9)
-
+ print("grumpydev",581,280-m,9)
+ print("and all players!",554,288-m,9)
+ 
  print("feedback welcome!",524,304-m,4)
  print("@foxcatsquirrel",557,312-m,12)
  
@@ -1614,9 +1599,10 @@ function draw_credits()
 
   --fcs sprite
   spr(7,535,65)
- 
+  
   --	shadow
   rectfill(521,52,631,60,0)
+ 	
  	-- speech bubble to mouth
 	 line(542,58,542,66,0)
 	 line(543,58,543,65,0)
@@ -1638,12 +1624,38 @@ function draw_credits()
  rectfill(512,0,640,32,0) 
  rectfill(512,96,640,128,0)
 
-   if btnp(❎) then
-    _update=high_score_table.update()
-    _draw=high_score_table.draw()
-    --_initall()
-   end
+  if btnp(❎) then
+   _update=high_score_table.update()
+   _draw=high_score_table.draw()
+  end
  end 
+end
+
+function drawbox(x1,y1,x2,y2,c1,c2,c3)
+ rectfill(cam_x+x1,y1,cam_x+x2,y2,c1)
+ rectfill(cam_x+x1+2,y1-2,cam_x+x2+2,y2-2,c2)
+ rect(cam_x+x1+2,y1-2,cam_x+x2+2,y2-2,c3)
+  
+ -- rivets
+ pset(cam_x+x1+4,y1,10)
+ pset(cam_x+x2,y1,10)
+ pset(cam_x+x1+4,y2-4,10)
+ pset(cam_x+x2,y2-4,10)
+end
+
+function circles(c1,c2,c3,c4)
+ m+=10
+  circfill(cam_x+64,64,m-40,c1)
+  circfill(cam_x+64,64,m-80,c2)
+  circfill(cam_x+64,64,m-120,c3)
+  circfill(cam_x+64,64,m-140,c4)
+end
+
+function shadowtext(str,x,y,c)
+
+ print(str,x,y,0)
+-- text
+ print(str,x+1,y-1,c)
 end
 -->8
 -- enemies
@@ -1942,21 +1954,23 @@ function shockwave(x,y,r,c_table,num)
 end
 -->8
 -- high score code
-high_score_table = { magic_number = 42, pad_digits = 8, base_address=0, current_score = 0}
+high_score_table = { magic_number = 41, pad_digits = 7, base_address=0, a=0, current_score = 0}
 high_score_table.characters = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", " " }
 score_entry = { entering = false, entry_number=1, entry_character=1, cycle_colours={10,9,8,14}, current_colour=1, cycle_count=0 }
 
 high_score_table.scores = {}
 
 function high_score_table.update()
-
+ 
+ delay-=1
+ 
  if (not score_entry.entering) then
- 	if (btnp(⬅️)) high_score_table.add_current_score(-100)
-   if (btn(➡️)) high_score_table.add_current_score(100)
-	 	if (btnp(⬆️)) sfx(2)--high_score_table.check_current_score(high_score_table.current_score)
+	 high_score_table.check_current_score(high_score_table.current_score)
+ if delay<=100 and	btnp(❎) then
+   _initall()
+  end
  end
   
-
 	if (score_entry.entering) then
 		score_entry.cycle_count += 1
 
@@ -1983,23 +1997,31 @@ function high_score_table.update()
 			high_score_table.scores[score_entry.entry_number].name = high_score_table.array_to_string(score_entry.characters)
 			score_entry.entering = false
 			high_score_table.save_scores()
+			high_score_table.current_score = 0
 		end
 	end
+--   high_score_table.a += 0.0257
 end
 
 function high_score_table.draw()
 	cls()
-	
+ 
+ draw_levels()	
+	drawbox(4,8,119,124,0,1,9)
+		
 	local title_text = "top players"
-	? title_text, cam_x+(64-#title_text*2), 10, 8
+	? title_text, cam_x+(64-#title_text*2), 14, 9
 
-	local debug_string = "score: "..high_score_table.get_score_text(high_score_table.current_score)
- ? debug_string, 64-#debug_string*2, 114, 8
+ if high_score_table.current_score>0 then
+ 	local debug_string = "your score: "..high_score_table.get_score_text(high_score_table.current_score)
+  ? debug_string, cam_x+(64-#debug_string*2), 114, 9
+ else
+ end
 
 	for i=0, #high_score_table.scores-1 do
 		local score = high_score_table.scores[i+1]
 		local score_name = score.name
-		local score_c = 8
+		local score_c = 15
 
 		if (score_entry.entering and score_entry.entry_number == i+1) then
 			score_name = high_score_table.array_to_string(score_entry.characters)
@@ -2007,9 +2029,9 @@ function high_score_table.draw()
 		end
 
 		local score_text = score_name.."...."..high_score_table.get_score_text(score.score)
-		local score_x = 64-#score_text*2
-	 
-		? score_text, score_x, 8*i+20, score_c
+		local score_x = cam_x+(64-#score_text*2)
+	
+		? score_text, score_x, 8*i+26, score_c
 
 		if (score_entry.entering and score_entry.entry_number == i+1) then
 			local start_x = score_x+(score_entry.entry_character-1)*4
@@ -2020,107 +2042,104 @@ end
 
 -- adding scores using bit shifting to allow for higher values
 -- taken from this thread https://www.lexaloffle.com/bbs/?tid=3577
-function high_score_table.add_current_score(addition)
-	high_score_table.current_score += shr(addition, 16)
-end
 
 function high_score_table.check_current_score()
-	for i=1,10 do
-		if (high_score_table.current_score > high_score_table.scores[i].score) then
-			for j=10,i+1,-1 do
-				high_score_table.scores[j] = high_score_table.scores[j-1]
-			end
-			score_entry.entering = true
-			score_entry.entry_number = i
-			score_entry.entry_character = 1
-			score_entry.characters = {1,1,1}
-			high_score_table.scores[i] = {name="aaa", score=high_score_table.current_score}
-			return true
-		end
-	end
-	return false
+    for i=1,10 do
+      if (high_score_table.current_score > high_score_table.scores[i].score) then
+         for j=10,i+1,-1 do
+             high_score_table.scores[j] = high_score_table.scores[j-1]
+      end
+       score_entry.entering = true
+       score_entry.entry_number = i
+       score_entry.entry_character = 1
+       score_entry.characters = {1,1,1}
+       high_score_table.scores[i] = {name="aaa", score=high_score_table.current_score}
+            return true
+        end
+    end
+    return false
 end
 
 function high_score_table.load_scores()
-	local value = dget(high_score_table.base_address)
+    local value = dget(high_score_table.base_address)
 
-	if (value != high_score_table.magic_number) then
-		for i=1,10 do
-			high_score_table.scores[i] = { name = "aaa", score = shr((11000-i*1000),16)}
-		end
-		return false
-	end
+    if (value != high_score_table.magic_number) then
+        for i=1,10 do
+            high_score_table.scores[i] = { name = "fcs", score = ((11000-i*1000) >> 16)}
+        end
+        return false
+    end
 
-	local current_address = high_score_table.base_address + 1
-	high_score_table.scores = { }
-	for i=1,10 do
-		local digits = ""
-		score = dget(current_address)
-		digits = digits..high_score_table.int_to_char(dget(current_address+1))
-		digits = digits..high_score_table.int_to_char(dget(current_address+2))
-		digits = digits..high_score_table.int_to_char(dget(current_address+3))
-		high_score_table.scores[i] = { name=digits, score=score }
-		current_address += 4
-	end
-	
-	return true
+ local current_address = high_score_table.base_address + 1
+ high_score_table.scores = { }
+ for i=1,10 do
+   local digits = ""
+   score = dget(current_address)
+   digits = digits..high_score_table.int_to_char(dget(current_address+1))
+   digits = digits..high_score_table.int_to_char(dget(current_address+2))
+   digits = digits..high_score_table.int_to_char(dget(current_address+3))
+   high_score_table.scores[i] = { name=digits, score=score }
+   current_address += 4
+ end
+   
+    return true
 end
 
 function high_score_table.save_scores()
-	dset(high_score_table.base_address, high_score_table.magic_number)
+    dset(high_score_table.base_address, high_score_table.magic_number)
 
-	local current_address = high_score_table.base_address + 1
-	for i=1,10 do
-		dset(current_address, high_score_table.scores[i].score)
+    local current_address = high_score_table.base_address + 1
+    for i=1,10 do
+        dset(current_address, high_score_table.scores[i].score)
 
-		dset(current_address+1, high_score_table.char_to_int(sub(high_score_table.scores[i].name,1,1)))
-		dset(current_address+2, high_score_table.char_to_int(sub(high_score_table.scores[i].name,2,2)))
-		dset(current_address+3, high_score_table.char_to_int(sub(high_score_table.scores[i].name,3,3)))
+        dset(current_address+1, high_score_table.char_to_int(sub(high_score_table.scores[i].name,1,1)))
+        dset(current_address+2, high_score_table.char_to_int(sub(high_score_table.scores[i].name,2,2)))
+        dset(current_address+3, high_score_table.char_to_int(sub(high_score_table.scores[i].name,3,3)))
 
-		current_address += 4
-	end
+        current_address += 4
+    end
 end
 
-function high_score_table.get_score_text(points)
-	if (points == nil) return "0"
+function high_score_table.get_score_text(score_value)
+    if (score_value == nil) return "0"
 
-	local s = ""
-    local v = abs(points)
+    local s = ""
+    local v = abs(score_value)
     repeat
-      s = shl(v % 0x0.000a, 16)..s
+      s = (v % 0x0.000a << 16)..s
       v /= 10
     until (v==0)
 
-	for p=1,high_score_table.pad_digits-#s do
-		s = "0"..s
-	end
+    for p=1,high_score_table.pad_digits-#s do
+        s = "0"..s
+    end
 
-    if (points<0)  s = "-"..s
+    if (score_value<0)  s = "-"..s
     return s 
 end
 
 function high_score_table.char_to_int(char)
-	for k,v in pairs(high_score_table.characters) do
-		if (v == char) return k
-	end
+    for k,v in pairs(high_score_table.characters) do
+        if (v == char) return k
+    end
 
-	return -1
+    return -1
 end
 
 function high_score_table.int_to_char(int)
-	for k,v in pairs(high_score_table.characters) do
-		if (k == int) return v
-	end
+    for k,v in pairs(high_score_table.characters) do
+        if (k == int) return v
+    end
 
-	return ""
+    return ""
 end
 
 function high_score_table.array_to_string(array)
-	local string = ""
-	for i=1,#array do
-		string = string..high_score_table.int_to_char(array[i])
-	end
-	return string
+    local string = ""
+    for i=1,#array do
+        string = string..high_score_table.int_to_char(array[i])
+    end
+    return string
 end
 __gfx__
 00000000079004007090040007900400709004000790040070900400009004007090040000000000000000000000000000111100000000000000000000000000

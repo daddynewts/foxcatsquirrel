@@ -14,18 +14,78 @@ end
 
 function _initall()
 
+ -- first level  = 0
  level=0
+
+ -- how much food you've grabbed
  count=0
- addfood=10
+
+ -- how much count increases
+ -- when you get food
+ addfood=1
+ 
+ -- how many tries you get
  lives=3
  
+ -- resets the time
  init_times()
+ 
+ player={
+  sp=1,
+  x=16,
+  y=24,
+  w=8,
+  h=8,
+  flp=false,
+  dx=0, -- means player is not moving at the start
+  dy=0,
+  max_dx=3.4,	-- default 3
+  max_dy=3, -- default 3 or 4.5
+  acc=0.2, -- was 0.5
+  boost=0,--3.8, -- was 4, now 3.8
+  minboost=1,
+  maxboost=3.8,
+  anim=0,
+  holding=false,
+  holdtime=0,
+  running=false,
+  jumping=false,
+  falling=false,
+  sliding=false,
+  landed=false,
+  waslanded=0,
+  gliding=false,
+  dead=false,
+  }
+
+ -- means cooldown = 0
+ is_shockwave=false
+ 
+ --enemies
+ ghosts={
+  ghost={ ghost_sp=10, x=100, flp=false}
+ }
+ 
+ ducks={ 
+  duck={ x=70, flp=false }
+ }
  
  duckangle=0
  duckapproach=0
  ghostangle=0
  ghostapproach=0
  
+ foods={}
+  food={
+  x=5,
+  y=5,
+  h=8,
+  w=8,
+ }
+
+  food_start=26
+  food_count=4
+  
  -- sfx
  intro_jingle = 63
  eat_sfx = {14,9}
@@ -61,6 +121,9 @@ function _initall()
   player.dy=0
  end
  
+ cam_x=level*128
+ cam_y=0
+ 
  -- crumbs
  effects = {}
 
@@ -87,39 +150,8 @@ function _initall()
   sp=92,
  }
  
- player={
-  sp=1,--165
-  x=16, -- default 8
-  y=24,-- default 24
-  w=8,
-  h=8,
-  flp=false,
-  dx=0, -- means player is not moving at the start
-  dy=0,
-  max_dx=3.4,	-- default 3
-  max_dy=3, -- default 3 or 4.5
-  acc=0.2, -- was 0.5, now .2
-  boost=0,--3.8, -- was 4, now 3.8
-  minboost=1,
-  maxboost=3.8,
-  anim=0,
-  holding=false,
-  holdtime=0,
-  running=false,
-  jumping=false,
-  falling=false,
-  sliding=false,
-  landed=false,
-  waslanded=0,
-  gliding=false,
-  dead=false,
-  }
-
- is_shockwave=false
-
- cam_x=level*128
- cam_y=0
-  
+ 
+    
  init_platforms()
 
  init_menu()
@@ -139,36 +171,18 @@ function _initall()
   ship.y=66
   ship.sp=192
   
- --enemies
- ghosts={
-  ghost={ ghost_sp=10, x=100, flp=false}
- }
- 
- ducks={ 
-  duck={ x=70, flp=false }
- }
- 
- foods={}
-  food={
-  x=5,
-  y=5,
-  h=8,
-  w=8,
- }
- 
-  food_start=26
-  food_count=4
-    
+
+   
+ -- make the key glitter! 
  twinkle={}
   twinkle.sp=44
   
  bonuses={}
    
  balloons={}
-  balloon_sp=61
-     
+       
  gravity=0.3
- friction=0.95 -- default 0.85
+ friction=0.95
  
 --map limits
  map_start=0
@@ -190,7 +204,6 @@ function init_times()
  glidetime=0
  leveltime=1
  timeleft=127
--- timegain=10
  delay=100
  timededuction=0
  maxtd=0.25 --0.3
@@ -215,14 +228,10 @@ function init_platforms()
   rsprite=37,
  } 
 end
-
-function test_ui()
- print("airtime:"..player.waslanded,8,8,7)
-end
 -->8
 -- update and game loop
 
---function _update() -- these run in order
+--function _update60()
 --end
 
 function init_menu()
@@ -284,14 +293,13 @@ function update_gameover()
  delay-=1
 	if delay<=50 and	btnp(❎) then
   sfx(menu_sfx)
-   _update=high_score_table.update
-   _draw=high_score_table.draw
- 	 --_initall()
+  _update=high_score_table.update
+  _draw=high_score_table.draw
 	end
 end
 
 function timecheck()
- timegain=count -- default 12
+ timegain=count
  timeleft-=timededuction
  timededuction=0.1*(count/6) -- default 0.1*(count/6)
 
@@ -301,6 +309,7 @@ function timecheck()
  if timeleft <= 2 then
   livescheck() --time up  
  end
+ -- maximum time deduction
  if timededuction>=maxtd then
   timededuction=maxtd
  end
@@ -318,7 +327,6 @@ function collide_map(obj,aim,flag)
   w=obj.w h=obj.h
  
  --default is all zeroes
- -- removed "local"
   x1=0 y1=0
   x2=0 y2=0
   
@@ -460,12 +468,12 @@ function player_update()
  
  if player.holding
   then
-   player.boost+=1 --1
+   player.boost+=0.5
  end
  
  -- player is going up here
  if player.boost>=1 
-  and player.waslanded>=-0.4 --4
+  and player.waslanded>=-0.4
    then
     player.dy-=player.boost
     player.landed=false
@@ -658,7 +666,7 @@ function draw_game()
  draw_levels()
  map(flr(cam_x/8), flr(cam_y/8), -- upper left map square
   flr(cam_x/8)*8, flr(cam_y)*8, -- world coordinate to draw to
-  17,17)   -- 17 because the camera may not be exactly on a map square
+  17,17)  -- 17 because the camera may not be exactly on a map square
  draw_platforms() 
  spr(player.sp,player.x,player.y,1,1,player.flp)
  draw_splashes()
@@ -673,8 +681,6 @@ end
 
 function draw_ui()
 
- test_ui()
- 
  if timeleft>=40 then 
   timecolour=3
  else if timeleft<=18 then
@@ -895,7 +901,7 @@ function level_food()
 end
 
 function draw_food()
-  spr(food.sprite,food.x,food.y)
+ spr(food.sprite,food.x,food.y)
 end
 
 
@@ -903,9 +909,9 @@ function collide_food()
 
  for food in all(foods) do
  	
-  if  food.y > player.y-8 -- -4
-  and food.y < player.y+8 -- +4
-  and food.x+4 > player.x -- 4
+  if  food.y > player.y-8 
+  and food.y < player.y+8 
+  and food.x+4 > player.x
   and food.x+4 < player.x+8
    then
     add_foodpoints()
@@ -980,7 +986,6 @@ function make_balloon()
 
  if count==flr(rnd(20))+10
  then
---flr(rnd(10)+5) then
   for i=1,1 do    
    balloon={
     sprite=61,
@@ -1042,12 +1047,14 @@ function draw_levels()
  if level==0 then
    sky.colour=12 -- light blue
  
-  -- sea
+  -- cola sea
   rectfill(0,70,70,127,2)
   rect(-1,70,70,127,1)
-  -- bubbles
+  
+  -- fizzy bubbles
   pset(rnd(flr(50))+5,rnd((flr(10)))+70,7)
-  --island
+
+  -- iced gem island
   spr(193,10,64)
   spr(ship.sp,ship.x,ship.y)
   
@@ -1122,16 +1129,19 @@ function draw_levels()
   circfill(296,-18,38+sin(2*leveltime),1)
   circfill(328,-20,42-sin(2*leveltime),1)
   circfill(368,-10,44+sin(2*leveltime),1)
+  
   -- lighter clouds
   circfill(266,-10,38-sin(2*leveltime),5)
   circfill(296,-18,34+sin(2*leveltime),5)
   circfill(328,-20,38-sin(2*leveltime),5)
   circfill(368,-10,40+sin(2*leveltime),5)
+  
   -- lighter outer clouds
   circfill(266,-10,30-sin(2*leveltime),13)
   circfill(296,-18,26+sin(2*leveltime),13)
   circfill(328,-20,30-sin(2*leveltime),13)
   circfill(368,-10,32+sin(2*leveltime),13)
+  
   -- sea/background
   rectfill(256,70,394,128,1)
   hplatform.lsprite=108
@@ -1175,13 +1185,14 @@ function draw_levels()
  end
  
  -- brazier
+ spr(fire.sp,392,69)
+ spr(fire.sp,496,69)
+
  fire.sp+=0.5
- if fire.sp>=198 then
-  fire.sp=195
- end
-  spr(fire.sp,392,69)
-  spr(fire.sp,496,69)
- 
+  if fire.sp>=198 then
+   fire.sp=195
+  end
+  
  -- final level - volcano
  if level==4 then
   pal()
@@ -1193,7 +1204,7 @@ function draw_levels()
   circfill(578,-30+sin(t()),46,5)
   circfill(628,-24+sin(t()),48,5)
 
-    -- dark red clouds
+  -- dark red clouds
   circfill(518,-26-sin(t()),46,2)
   circfill(548,-28+sin(t()),40,2)
   circfill(578,-30-sin(t()),44,2)
@@ -1274,6 +1285,7 @@ function update_mainmenu()
  if delay<-300 then
   delay=200
   _draw=draw_menu
+  music(intro_jingle)
  end
  player_animate()
  if delay<-20 and btnp(❎) then
@@ -1287,7 +1299,6 @@ function update_mainmenu()
  elseif delay<-100 then
   _draw=high_score_table.draw
  end
- 
 end
 
 function update_tutorial()
@@ -1316,7 +1327,6 @@ function draw_tutorial()
  -- instructions box
  drawbox(17,46,107,95,0,2,4)
  
- -- shadow
  shadowtext("get 10 food",26,51,9) 
  
  -- food sprites
@@ -1392,6 +1402,7 @@ function draw_dead()
  circles(1,2,4,13)
 
  if m>=220 then
+ 
  -- double-size "you died"
   rectfill(cam_x,44,cam_x+128,48,9)
   rectfill(cam_x,49,cam_x+128,51,4)
@@ -1403,8 +1414,7 @@ function draw_dead()
 
   -- lives left
   spr(1,cam_x+52,92)
-  print("X "..lives,cam_x+61,94,1)
-  print("X "..lives,cam_x+62,93,7)
+  shadowtext("X "..lives,cam_x+62,93,7)
 
  end
 end
@@ -1625,8 +1635,8 @@ function draw_credits()
  rectfill(512,96,640,128,0)
 
   if btnp(❎) then
-   _update=high_score_table.update()
-   _draw=high_score_table.draw()
+   _update=high_score_table.update
+   _draw=high_score_table.draw
   end
  end 
 end
@@ -1954,7 +1964,7 @@ function shockwave(x,y,r,c_table,num)
 end
 -->8
 -- high score code
-high_score_table = { magic_number = 41, pad_digits = 7, base_address=0, a=0, current_score = 0}
+high_score_table = { magic_number = 40, pad_digits = 7, base_address=0, a=0, current_score = 0}
 high_score_table.characters = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", " " }
 score_entry = { entering = false, entry_number=1, entry_character=1, cycle_colours={10,9,8,14}, current_colour=1, cycle_count=0 }
 
@@ -2000,7 +2010,6 @@ function high_score_table.update()
 			high_score_table.current_score = 0
 		end
 	end
---   high_score_table.a += 0.0257
 end
 
 function high_score_table.draw()
@@ -2014,7 +2023,7 @@ function high_score_table.draw()
 
  if high_score_table.current_score>0 then
  	local debug_string = "your score: "..high_score_table.get_score_text(high_score_table.current_score)
-  ? debug_string, cam_x+(64-#debug_string*2), 114, 9
+  ? debug_string, cam_x+(64-#debug_string*2), 110, 9
  else
  end
 
@@ -2035,7 +2044,7 @@ function high_score_table.draw()
 
 		if (score_entry.entering and score_entry.entry_number == i+1) then
 			local start_x = score_x+(score_entry.entry_character-1)*4
-			line (start_x, 8*i+26, start_x+2, 8*i+26,score_c)
+			line (start_x, 8*i+32, start_x+2, 8*i+32,score_c)
 		end
 	end
 end
@@ -2285,19 +2294,19 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccaaaaaa
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccaaaaaaaaaaaaaaacccccccccccccccccccccccccccccccccccccccc
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccaaaaaaaaaaaaaaacccccccccccccccccccccccccccccccccccccccc
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccaaaaaaaaaaaaaaaaaccccccccccccccccccccccccccccccccccccccc
-ccccccccccccccccccccc000000000000000000000000000000000000000000000000000000000000000000000000000000000000cccccc777cccccccccccccc
-ccccccccccccccccccccc077777777777777777777777777777777777777777777777777777777777777777777777777777777770ccccc77777ccccccccccccc
-cccccccccccccccccccc0077770007000770070007777700070007700700070077000777770007700700070007700700777077770ccccc77777ccccccccccccc
-cccccccccccccccccccc0077770777070707777077777707070707077707070707077777770707077770777077070707077077770ccccc7777777ccccccccccc
-cccccccccccccccccccc0077770077000700077077777700070077077700070707007777770007077770777077070707077077770cccc777777777cccccccccc
-cccccccccccccccccccc0077770777070777077077777707070707077707070707077777770707077770777077070707077777770ccccccccccccccccccccccc
-cccccccccccccccccccc0077770777070700777077777707070707700707070007000777770707700770770007007707077077770ccccccccccccccccccccccc
+ccccccccccccccccccccc000000000000000000000000000000000000000000000000000000000000000000000000000000000000ccccccccccccccccccccccc
+ccccccccccccccccccccc077777777777777777777777777777777777777777777777777777777777777777777777777777777770ccccccccccccccccccccccc
+cccccccccccccccccccc0077770707000707777007700700070007777700077007777700070707777770070007000700077077770ccccccccccccccccccccccc
+cccccccccccccccccccc0077770707077707770777070700070777777770770707777700070707777707770707000707777077770ccccccccccccccccccccccc
+cccccccccccccccccccc0077770707007707770777070707070077777770770707777707070007777707770007070700777077770ccccccccccccccccccccccc
+cccccccccccccccccccc0077770007077707770777070707070777777770770707777707077707777707070707070707777777770ccccccccccccccccccccccc
+cccccccccccccccccccc0077770007000700077007007707070007777770770077777707070007777700070707070700077077770ccccccccccccccccccccccc
 cccccccccccccccccccc0077777777777777777777777777777777777777777777777777777777777777777777777777777777770ccccccccccccccccccccccc
-cccccccccccccccccccc0000077700000000000000000000000000000000000000000000000000000000000000000000000000000ccccccccccccccccccccccc
-cccccccccccccccccccc00000070000000000000000000000000000000000000000000000000000000000000000000000000000ccccccccccccccccccccccccc
-cccccccccccccccc7c9cc4ccc00ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-cccccccccccccccc4c9999cc00cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-ccccccccccccccccc49191cc0ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccccccccccccc0000077700000000000000000000000000000000000000000000000000000000000000000000000000000ccccccccccccccccccccc77
+cccccccccccccccccccc00000070000000000000000000000000000000000000000000000000000000000000000000000000000cccccccccccccccccccccc777
+cccccccccccccccc7c9cc4ccc00cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc777
+cccccccccccccccc4c9999cc00cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc7777
+ccccccccccccccccc49191cc0ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc777777
 ccccccccccccccccc9f99f9ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 cccccccccccccccc749171c7cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 ccccccccccccccccc29999cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
@@ -2338,18 +2347,18 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc77ffffffffffffffff
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc77ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccc77ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
 ccccccccccccccfcccccccccccccccccccccccccccccccccccccccccc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-ccccccccccccceefcccccccccccccccccccccccc7cccccccccccccc77fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-cccccccccccceeff7ccccccccccccccccccccccc77cccccccccccc7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-ccccccccccc42eef44ccccccccccccccccccccc7777ccccccccc77ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-1111111111f444444f1111111111111111111115777111111117ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-22222222222ffffff2222222222222222222225222522222227fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
-222222222222222222222222222222222222224444111111111111ffffffffffffffffffff111111111111ffffffffffffffffffffffffffffffffffffffffff
-2222222222222222222222222222222222222222414eeeeee8eee71ffffffffffffffffff14eeeeee8eee71fffffffffffffffffffffffffffffffffffffffff
+ccccccccccccceefcccccccccccccccccc7cccccccccccccccccccc77fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+cccccccccccceeff7ccccccccccccccccc77cccccccccccccccccc7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ccccccccccc42eef44ccccccccccccccc7777ccccccccccccccc77ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+1111111111f444444f1111111111111115777111111111111117ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+22222222222ffffff2222222222222725222522222222222227fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+222222222222222222222222222222224444422222111111111111ffffffffffffffffffff111111111111ffffffffffffffffffffffffffffffffffffffffff
+2222222222222222222222222222222222442222214eeeeee8eee71ffffffffffffffffff14eeeeee8eee71fffffffffffffffffffffffffffffffffffffffff
 222222222222222222222222222222222222222214e888eeee8eee71ffffffffffffffff14e888eeee8eee71ffffffffffffffffffffffffffffff8888888888
 22222222222222222222222222222222222222221482228e88288271ffffffffffffffff1482228e88288271fffffffffffffffffffffff8888888eeeeeeeeee
 22222222222222222222222222222222222222221228ff2822f22fa1ffffffffffffffff1228ff2822f22fa1fffffffffffffffffff8888eeeeeeeeeeeeeeeee
 222222222222222222222222222222222222222212fffef2feffffa1ffffffffffffffff12fffef2feffffa1fffffffffffffff8888eeeeeeeeeeeeeeeeeeeee
-2222222222222222222222222222222222227222212affffffaffa1ffffffffffffffffff12affffffaffa1fffffffffffff888eeeeeeeeeeeeeeeeeeeeeeeee
+2222222222222222222222222222222222222222212affffffaffa1ffffffffffffffffff12affffffaffa1fffffffffffff888eeeeeeeeeeeeeeeeeeeeeeeee
 222222222222222222222222222222222222222227111111111111ffffffffffffffffffff111111111111fffffffffff888eeeeeeeeeeeeeeeeeeeeeeeeeeee
 22222222222222222222222222222222222222227ffffffffffffffffffffffffffffffffffffffffffffffffffffff88eeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
 2222222222222222222222222222222222222227fffffffffffffffffffffffffffffffffffffffffffffffffffff88eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
@@ -2375,19 +2384,19 @@ ccccccccccc42eef44ccccccccccccccccccccc7777ccccccccc77ffffffffffffffffffffffffff
 44444444444444444449111111111111111111111111111111111111111111111111111111111111111111111111111111111111111119eeeeeeeeeeeeeeeeee
 444444444444444440091a1111111111111111111111111111111111111111111111111111111111111111111111111111111111111a19eeeeeeeeeeeeeeeeee
 44444444444444444009111111111111111111111111111111111111111111111111111111111111111111111111111111111111111119eeeeeeeeeeeeeeeeee
-44447444444444444009111111111111111111111111111111111111111111111111111111111111111111111111111111111111111119eeeeeeeeeeeeee7eee
-44477444444444444009111111111111111111111111111111111111111111111111111111111111111111111111111111111111111119eeeeeeeeeeeee77eee
-44767744444444444009111111111111111111111111111111111111111111111111111111111111111111111111111111111111111119eeeeeeeeeeee7677ee
-46776674444444444009111111111111111111111111111111111111111111111111111111111111111111111111111111111111111119eeeeeeeeeee677667e
-4767777444444444400911111111111ccc11111111c11ccc11cc1c1c11cc1ccc1ccc11cc11c11c1c1ccc1ccc1ccc1ccc1c111111111119eeeeeeeeeee767777e
-467666744444444440091111111111ccccc111111c1c1c111c1c1c1c1c111c1c11c11c111c1c1c1c11c11c1c1c1c1c111c111111111119eeeeeeeeeee676667e
-44677764444444444009111111111ccccccc11111c1c1cc11c1c11c11c111ccc11c11ccc1c1c1c1c11c11cc11cc11cc11c111111111119eeeeeeeeeeee67776e
-444666444444444440091111111111c1c1c111111c111c111c1c1c1c1c111c1c11c1111c1cc11c1c11c11c1c1c1c1c111c111111111119eeeeeeeeeeeee666ee
-411111111111111110091111111111c1ccc1111111cc1c111cc11c1c11cc1c1c11c11cc111cc11cc1ccc1c1c1c1c1ccc1ccc111111111911111111111111111e
-1eee8ee8eeeeee8ee0091111111111111111111111111111111111111111111111111111111111111111111111111111111111111111198eeeeeee8eeeeef771
-eeeeeeeeeeeeeeeee009111111111111111111111111111111111111111111111111111111111111111111111111111111111111111119eeeeeeeeeee8eeeff7
-eee888ee88e88ee88009111111111111111111111111111111111111111111111111111111111111111111111111111111111111111119e888e88ee8ee8ee88f
-e882228e228228822009111111111111111111111111111111111111111111111111111111111111111111111111111111111111111119822282288288288224
+44447444444444444009111111111111fff1fff1fff11ff11ff111111fffff111111fff11ff1fff11111f1f1fff1f111fff11111111119eeeeeeeeeeeeee7eee
+44477444444444444009111111111111f1f1f1f1f111f111f1111111ff111ff11111f111f1f1f1f11111f1f1f111f111f1f11111111119eeeeeeeeeeeee77eee
+44767744444444444009111111111111fff1ff11ff11fff1fff11111ff1f1ff11111ff11f1f1ff111111fff1ff11f111fff11111111119eeeeeeeeeeee7677ee
+46776674444444444009111111111111f111f1f1f11111f111f11111ff111ff11111f111f1f1f1f11111f1f1f111f111f1111111111119eeeeeeeeeee677667e
+47677774444444444009111111111111f111f1f1fff1ff11ff1111111fffff111111f111ff11f1f11111f1f1fff1fff1f1111111111119eeeeeeeeeee767777e
+46766674444444444009111111111111111111111111111111111111111111111111111111111111111111111111111111111111111119eeeeeeeeeee676667e
+44677764444444444009111111111111111111111111111111111111111111111111111111111111111111111111111111111111111119eeeeeeeeeeee67776e
+44466644444444444009111111111111111111111111111111111111111111111111111111111111111111111111111111111111111119eeeeeeeeeeeee666ee
+411111111111111110091111111111111ccc11111c11ccc11cc1c1c11cc1ccc1ccc11cc11c11c1c1ccc1ccc1ccc1ccc1c111111111111911111111111111111e
+1eee8ee8eeeeee8ee009111111111111ccccc111c1c1c111c1c1c1c1c111c1c11c11c111c1c1c1c11c11c1c1c1c1c111c11111111111198eeeeeee8eeeeef771
+eeeeeeeeeeeeeeeee00911111111111ccccccc11c1c1cc11c1c11c11c111ccc11c11ccc1c1c1c1c11c11cc11cc11cc11c1111111111119eeeeeeeeeee8eeeff7
+eee888ee88e88ee88009111111111111c1c1c111c111c111c1c1c1c1c111c1c11c1111c1cc11c1c11c11c1c1c1c1c111c1111111111119e888e88ee8ee8ee88f
+e882228e228228822009111111111111c1ccc1111cc1c111cc11c1c11cc1c1c11c11cc111cc11cc1ccc1c1c1c1c1ccc1ccc11111111119822282288288288224
 7228ff28ff2fe22ff0091111111111111111111111111111111111111111111111111111111111111111111111111111111111111111192fff2fe22f22f22f4f
 fffffef2f8fffffff0091a1111111111111111111111111111111111111111111111111111111111111111111111111111111111111a19fff8fffffffeffffff
 fffafffffffefffff009111111111111111111111111111111111111111111111111111111111111111111111111111111111111111119fffffeffffffafffff
@@ -2401,7 +2410,7 @@ ffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefff
 6ffff9ff6ffff9ff6ffff9ff6ffff9ff6ffff9ff6ffff9ff6ffff9ff6ffff9ff6ffff9ff6ffff9ff6ffff9ff6ffff9ff6ffff9ff6ffff9ff6ffff9ff6ffff9ff
 
 __gff__
-0000000000000000000000002323000003030303000000000300000000000000010100010101000707000000000000000003000012930140400000000000101083838300000000000101010300000000010100002323000023000000000000000303030301000000200000000303030000000302010101000000000000130000
+0000000000000000000000002323000003030303000000000300000000000000010100010101000707000000000000000003000012930140400000000000101083838300000000000101010300000000010100002323000023000000000000000303030301000000200000000383030000000302010101000000000000130000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001010100010101000000030303000100000300000100000000000003000003000083830000000000000003030300000000000000000000000000
 __map__
 0000000000000000000000000000000000000026000000002600003a00002600000000000000000000000000000040414200004300530000000053004300004000000000000000000000000000000000d70000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
